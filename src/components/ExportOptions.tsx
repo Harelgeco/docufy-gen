@@ -37,7 +37,6 @@ const buildTemplateData = (row: Record<string, string>) => {
   return mapped;
 };
 
-// Extract header images from DOCX zip
 const extractHeaderImageURLs = async (zip: any): Promise<string[]> => {
   try {
     const urls: string[] = [];
@@ -71,6 +70,30 @@ const extractHeaderImageURLs = async (zip: any): Promise<string[]> => {
     return [];
   }
 };
+
+const extractAllMediaImages = (zip: any): string[] => {
+  try {
+    const urls: string[] = [];
+    const files = zip.files as Record<string, any>;
+    const mediaFiles = Object.keys(files).filter((k) => /^word\/media\//.test(k));
+    for (const path of mediaFiles) {
+      const ext = path.split(".").pop()?.toLowerCase();
+      if (!ext || !["png", "jpg", "jpeg", "gif", "bmp", "webp"].includes(ext)) continue;
+      const f = zip.file(path);
+      if (!f) continue;
+      const uint8 = f.asUint8Array();
+      const mime = ext === "png" ? "image/png" : ext === "jpg" || ext === "jpeg" ? "image/jpeg" : `image/${ext}`;
+      const blob = new Blob([uint8], { type: mime });
+      const url = URL.createObjectURL(blob);
+      urls.push(url);
+    }
+    return urls;
+  } catch (e) {
+    console.warn("Media image extraction failed", e);
+    return [];
+  }
+};
+
 
 export const ExportOptions = ({
   disabled,
@@ -138,8 +161,9 @@ export const ExportOptions = ({
           document.body.appendChild(loadingDiv);
 
           // Render with all features enabled
-          // Prepend header images manually if present
-          const headerUrls = await extractHeaderImageURLs(doc.getZip());
+          // Prepend header images manually if present; fallback to all media if none
+          let headerUrls = await extractHeaderImageURLs(doc.getZip());
+          if (!headerUrls.length) headerUrls = extractAllMediaImages(doc.getZip());
           if (headerUrls.length) {
             const headerDiv = document.createElement('div');
             headerDiv.style.cssText = 'text-align:right;margin-bottom:12px;';
