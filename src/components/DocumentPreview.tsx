@@ -2,10 +2,7 @@ import { useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
-// Use Mammoth browser build to convert DOCX -> HTML with inline images
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import mammoth from "mammoth/mammoth.browser";
+import { renderAsync } from "docx-preview";
 
 interface DocumentPreviewProps {
   templateName?: string;
@@ -68,23 +65,33 @@ export const DocumentPreview = ({
         doc.setData(buildTemplateData(rowData));
         doc.render();
 
-        // Generate ArrayBuffer and convert to HTML with Mammoth (images inlined as base64)
-        const filledBuffer: ArrayBuffer = doc.getZip().generate({ type: "arraybuffer" });
-        const result = await mammoth.convertToHtml(
-          { arrayBuffer: filledBuffer },
-          {
-            convertImage: mammoth.images.inline(async (element: any) => {
-              const base64 = await element.read("base64");
-              return { src: `data:${element.contentType};base64,${base64}` };
-            }),
-          }
-        );
+        // Generate filled DOCX blob
+        const outputBlob = doc.getZip().generate({
+          type: "blob",
+          mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        });
 
-        // Render HTML into container
-        const html = result.value as string;
-        containerRef.current.innerHTML = `<div class="mammoth-doc" dir="rtl">${html}</div>`;
+        // Clear container and render with docx-preview to preserve formatting
+        containerRef.current.innerHTML = "";
+        await renderAsync(outputBlob, containerRef.current, undefined, {
+          className: "docx-wrapper",
+          inWrapper: true,
+          ignoreWidth: false,
+          ignoreHeight: false,
+          ignoreFonts: false,
+          breakPages: true,
+          ignoreLastRenderedPageBreak: false,
+          experimental: false,
+          trimXmlDeclaration: true,
+          useBase64URL: true,
+          renderHeaders: true,
+          renderFooters: true,
+          renderFootnotes: true,
+          renderEndnotes: true,
+          debug: false,
+        });
 
-        // Ensure images are loaded before finishing
+        // Ensure images are loaded
         const images = Array.from(containerRef.current.querySelectorAll("img")) as HTMLImageElement[];
         await Promise.all(
           images.map(
