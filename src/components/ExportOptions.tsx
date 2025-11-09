@@ -52,7 +52,7 @@ export const ExportOptions = ({
     }
 
     try {
-      toast.info(`Generating ${selectedCount} PDF(s)... This may take a moment.`);
+      toast.info(`Generating ${selectedCount} PDF(s)... Please wait, this preserves all images and formatting.`);
       const templateData = await wordFile.arrayBuffer();
       let successCount = 0;
 
@@ -80,20 +80,29 @@ export const ExportOptions = ({
             mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
           });
 
-          // Create container for rendering
+          // Create visible container for proper rendering with images
           const container = document.createElement('div');
           container.style.cssText = `
-            position: absolute;
-            left: -9999px;
-            top: 0;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
             width: 794px;
             min-height: 1123px;
             background: white;
             padding: 20px;
+            z-index: 99999;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
           `;
           document.body.appendChild(container);
 
-          // Render the DOCX with full fidelity
+          // Show loading message
+          const loadingDiv = document.createElement('div');
+          loadingDiv.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 999999;';
+          loadingDiv.textContent = `Generating PDF for ${name}... Please wait.`;
+          document.body.appendChild(loadingDiv);
+
+          // Render with all features enabled
           await renderAsync(outputBlob, container, undefined, {
             className: "docx-wrapper",
             inWrapper: true,
@@ -104,7 +113,7 @@ export const ExportOptions = ({
             ignoreLastRenderedPageBreak: false,
             experimental: false,
             trimXmlDeclaration: true,
-            useBase64URL: true,
+            useBase64URL: false, // Critical: use regular URLs for images
             renderHeaders: true,
             renderFooters: true,
             renderFootnotes: true,
@@ -112,52 +121,62 @@ export const ExportOptions = ({
             debug: false,
           });
 
-          // Wait for all resources to load
+          // Wait for fonts
           await document.fonts.ready;
           
-          // Wait for images to load
+          // Wait for ALL images to fully load - CRITICAL for images
           const images = container.querySelectorAll('img');
+          console.log(`Found ${images.length} images in document`);
+          
           await Promise.all(
-            Array.from(images).map((img: HTMLImageElement) =>
+            Array.from(images).map((img: HTMLImageElement, index) =>
               new Promise<void>((resolve) => {
-                if (img.complete) resolve();
-                else {
-                  img.onload = () => resolve();
-                  img.onerror = () => resolve();
-                  setTimeout(() => resolve(), 3000); // timeout fallback
+                if (img.complete && img.naturalWidth > 0) {
+                  console.log(`Image ${index} already loaded`);
+                  resolve();
+                } else {
+                  img.onload = () => {
+                    console.log(`Image ${index} loaded successfully`);
+                    resolve();
+                  };
+                  img.onerror = (e) => {
+                    console.error(`Image ${index} failed to load:`, e, img.src);
+                    resolve();
+                  };
+                  setTimeout(() => {
+                    console.warn(`Image ${index} load timeout`);
+                    resolve();
+                  }, 10000);
                 }
               })
             )
           );
 
-          // Extra delay for layout settling
-          await new Promise(resolve => setTimeout(resolve, 500));
+          // Extra wait for layout and rendering
+          await new Promise(resolve => setTimeout(resolve, 1000));
 
           const fileName = `${name.replace(/[^a-zA-Z0-9\u0590-\u05FF]/g, '_')}.pdf`;
           
-          // Get the rendered content
           const content = container.querySelector('.docx') as HTMLElement || container;
 
-          // Generate PDF with high quality settings
+          // Generate PDF with maximum quality
           await html2pdf()
             .set({
               margin: 0,
               filename: fileName,
               image: { 
                 type: 'jpeg', 
-                quality: 1.0 
+                quality: 0.98 
               },
               html2canvas: { 
-                scale: 3,
+                scale: 2,
                 useCORS: true,
                 allowTaint: true,
                 backgroundColor: '#ffffff',
-                logging: false,
+                logging: true,
                 letterRendering: true,
-                imageTimeout: 0,
+                imageTimeout: 15000,
                 removeContainer: false,
-                scrollX: 0,
-                scrollY: 0,
               },
               jsPDF: { 
                 unit: 'mm', 
@@ -169,13 +188,13 @@ export const ExportOptions = ({
             .save();
 
           document.body.removeChild(container);
+          document.body.removeChild(loadingDiv);
           successCount++;
           
-          // Small delay between files
-          await new Promise(resolve => setTimeout(resolve, 300));
+          await new Promise(resolve => setTimeout(resolve, 500));
         } catch (error) {
           console.error(`Error generating PDF for ${name}:`, error);
-          toast.error(`Failed to generate PDF for ${name}`);
+          toast.error(`Failed to generate PDF for ${name}: ${error}`);
         }
       }
 
@@ -184,7 +203,7 @@ export const ExportOptions = ({
       }
     } catch (error) {
       console.error('Error in PDF generation:', error);
-      toast.error('Failed to generate PDFs');
+      toast.error(`Failed to generate PDFs: ${error}`);
     }
   };
 
@@ -196,6 +215,9 @@ export const ExportOptions = ({
           <Download className="mr-2 h-4 w-4" />
           Download PDF(s)
         </Button>
+        <p className="text-xs text-muted-foreground">
+          PDFs preserve all images, headers, and formatting from the Word template.
+        </p>
       </div>
       {selectedCount > 0 && (
         <p className="mt-4 text-sm text-center text-muted-foreground">

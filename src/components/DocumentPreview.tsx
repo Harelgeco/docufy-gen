@@ -70,6 +70,8 @@ export const DocumentPreview = ({
         });
 
         containerRef.current.innerHTML = "";
+        
+        // Render with all options enabled to show images
         await renderAsync(output, containerRef.current, undefined, {
           className: "docx-preview",
           inWrapper: true,
@@ -80,13 +82,32 @@ export const DocumentPreview = ({
           ignoreLastRenderedPageBreak: false,
           experimental: false,
           trimXmlDeclaration: true,
-          useBase64URL: true,
+          useBase64URL: false, // Changed to false to avoid blob URL issues
           renderHeaders: true,
           renderFooters: true,
           renderFootnotes: true,
           renderEndnotes: true,
           debug: false,
         });
+
+        // Wait for images to load
+        const images = containerRef.current.querySelectorAll('img');
+        await Promise.all(
+          Array.from(images).map((img: HTMLImageElement) =>
+            new Promise<void>((resolve) => {
+              if (img.complete) {
+                resolve();
+              } else {
+                img.onload = () => resolve();
+                img.onerror = () => {
+                  console.error('Image failed to load:', img.src);
+                  resolve();
+                };
+                setTimeout(() => resolve(), 5000);
+              }
+            })
+          )
+        );
 
         previewDataRef.current.innerHTML = "";
         const dataList = document.createElement("div");
@@ -107,7 +128,7 @@ export const DocumentPreview = ({
       } catch (error) {
         console.error("Preview render error:", error);
         if (containerRef.current) {
-          containerRef.current.innerHTML = `<p class="text-destructive">Failed to render preview</p>`;
+          containerRef.current.innerHTML = `<p class="text-destructive">Failed to render preview: ${error}</p>`;
         }
       }
     };
@@ -125,6 +146,7 @@ export const DocumentPreview = ({
           <div
             ref={containerRef}
             className="border rounded-lg overflow-auto max-h-[600px] bg-white p-4"
+            style={{ minHeight: '400px' }}
           />
           <div className="space-y-2">
             <div className="p-4 bg-muted rounded-lg">
