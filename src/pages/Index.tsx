@@ -24,23 +24,40 @@ const Index = () => {
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data, { type: "array" });
       
-      // Look for sheet named "database" or use first sheet
-      const sheetName = workbook.SheetNames.includes("database") 
-        ? "database" 
-        : workbook.SheetNames[0];
+      // Look for sheet named "database"
+      if (!workbook.SheetNames.includes("database")) {
+        toast.error("Sheet 'database' not found in Excel file");
+        return;
+      }
       
-      const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      const worksheet = workbook.Sheets["database"];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[];
       
-      // Extract names from first column, skipping header, convert to strings
+      if (jsonData.length === 0) {
+        toast.error("No data found in database sheet");
+        return;
+      }
+      
+      // Find the column index for "שם מלא רוכש 1"
+      const headerRow = jsonData[0];
+      const nameColumnIndex = headerRow.findIndex((header: any) => 
+        String(header).trim() === "שם מלא רוכש 1"
+      );
+      
+      if (nameColumnIndex === -1) {
+        toast.error("Column 'שם מלא רוכש 1' not found in database sheet");
+        return;
+      }
+      
+      // Extract names from the specific column, skipping header, convert to strings
       const extractedNames = jsonData
         .slice(1)
-        .map((row: any) => row[0])
+        .map((row: any) => row[nameColumnIndex])
         .filter((name: any) => name && String(name).trim() !== "")
         .map((name: any) => String(name));
       
       setNames(extractedNames);
-      toast.success(`Loaded ${extractedNames.length} names from Excel file`);
+      toast.success(`Loaded ${extractedNames.length} names from 'שם מלא רוכש 1' column`);
     } catch (error) {
       console.error("Error parsing Excel file:", error);
       toast.error("Failed to parse Excel file");
