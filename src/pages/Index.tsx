@@ -54,30 +54,43 @@ const Index = () => {
       }
       
       // Skip first 5 rows (project title info), row 6 (index 5) has headers
-      const headerRow = jsonData[5];
+      const headerRow = jsonData[5] || jsonData[0];
+
+      // Normalize header text: remove line breaks, <br>, extra spaces, NBSP
+      const normalize = (val: any) =>
+        String(val ?? "")
+          .replace(/\u00A0/g, " ")
+          .replace(/<br\s*\/?\>/gi, " ")
+          .replace(/\r?\n|\r|\t/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
       
+      const rawHeaders: string[] = (headerRow || []).map((h: any) => normalize(h));
+
       // Handle duplicate headers by adding suffixes
       const headers: string[] = [];
       const headerCounts: { [key: string]: number } = {};
-      
-      headerRow.forEach((header: any) => {
-        let headerStr = String(header).trim();
-        if (headerCounts[headerStr]) {
-          headerCounts[headerStr]++;
-          headerStr = `${headerStr} ${headerCounts[headerStr]}`;
+      rawHeaders.forEach((h) => {
+        let key = h;
+        if (headerCounts[key]) {
+          headerCounts[key]++;
+          key = `${key} ${headerCounts[key]}`;
         } else {
-          headerCounts[headerStr] = 1;
+          headerCounts[key] = 1;
         }
-        headers.push(headerStr);
+        headers.push(key);
       });
       
       setExcelHeaders(headers);
       
-      // Store all data rows starting from row 7 (index 6)
-      const dataRows = jsonData.slice(6).map((row: any) => {
+      // Determine data start row
+      const startIndex = jsonData[5] ? 6 : 1;
+
+      // Store all data rows starting from data start
+      const dataRows = jsonData.slice(startIndex).map((row: any) => {
         const rowData: any = {};
         headers.forEach((header: string, index: number) => {
-          rowData[header] = row[index] ? String(row[index]) : "";
+          rowData[header] = normalize(row[index]);
         });
         return rowData;
       });

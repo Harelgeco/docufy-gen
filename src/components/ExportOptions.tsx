@@ -91,9 +91,7 @@ export const ExportOptions = ({
         tempContainer.style.left = "0";
         tempContainer.style.width = "794px"; // ~A4 width @ 96dpi
         tempContainer.style.background = "white";
-        tempContainer.style.opacity = "0";
-        tempContainer.style.pointerEvents = "none";
-        tempContainer.style.zIndex = "-1";
+        tempContainer.style.zIndex = "9999";
         document.body.appendChild(tempContainer);
 
         await renderAsync(outputBlob, tempContainer);
