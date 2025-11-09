@@ -3,21 +3,33 @@ import { FileUploader } from "@/components/FileUploader";
 import { NameSelector } from "@/components/NameSelector";
 import { DocumentPreview } from "@/components/DocumentPreview";
 import { ExportOptions } from "@/components/ExportOptions";
+import { FieldMapping } from "@/components/FieldMapping";
 import { FileText } from "lucide-react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
+import Docxtemplater from "docxtemplater";
+import PizZip from "pizzip";
 
 const Index = () => {
   const [excelFile, setExcelFile] = useState<File>();
   const [wordFile, setWordFile] = useState<File>();
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
   const [names, setNames] = useState<string[]>([]);
+  const [excelHeaders, setExcelHeaders] = useState<string[]>([]);
+  const [excelData, setExcelData] = useState<any[]>([]);
+  const [wordPlaceholders, setWordPlaceholders] = useState<string[]>([]);
 
   useEffect(() => {
     if (excelFile) {
       parseExcelFile(excelFile);
     }
   }, [excelFile]);
+
+  useEffect(() => {
+    if (wordFile) {
+      parseWordTemplate(wordFile);
+    }
+  }, [wordFile]);
 
   const parseExcelFile = async (file: File) => {
     try {
@@ -33,10 +45,14 @@ const Index = () => {
         return;
       }
       
-      // Find the column index for "שם מלא רוכש 1"
+      // Get headers
       const headerRow = jsonData[0];
-      const nameColumnIndex = headerRow.findIndex((header: any) => 
-        String(header).trim() === "שם מלא רוכש 1"
+      const headers = headerRow.map((header: any) => String(header).trim());
+      setExcelHeaders(headers);
+      
+      // Find the column index for "שם מלא רוכש 1"
+      const nameColumnIndex = headers.findIndex((header: string) => 
+        header === "שם מלא רוכש 1"
       );
       
       if (nameColumnIndex === -1) {
@@ -44,18 +60,55 @@ const Index = () => {
         return;
       }
       
-      // Extract names from the specific column, skipping header, convert to strings
-      const extractedNames = jsonData
-        .slice(1)
-        .map((row: any) => row[nameColumnIndex])
-        .filter((name: any) => name && String(name).trim() !== "")
-        .map((name: any) => String(name));
+      // Store all data rows as objects with header keys
+      const dataRows = jsonData.slice(1).map((row: any) => {
+        const rowData: any = {};
+        headers.forEach((header: string, index: number) => {
+          rowData[header] = row[index] ? String(row[index]) : "";
+        });
+        return rowData;
+      });
+      
+      setExcelData(dataRows);
+      
+      // Extract names from the specific column
+      const extractedNames = dataRows
+        .map((row: any) => row["שם מלא רוכש 1"])
+        .filter((name: string) => name && name.trim() !== "");
       
       setNames(extractedNames);
-      toast.success(`Loaded ${extractedNames.length} names from 'שם מלא רוכש 1' column`);
+      toast.success(`Loaded ${extractedNames.length} names and ${headers.length} columns`);
     } catch (error) {
       console.error("Error parsing Excel file:", error);
       toast.error("Failed to parse Excel file");
+    }
+  };
+
+  const parseWordTemplate = async (file: File) => {
+    try {
+      const data = await file.arrayBuffer();
+      const zip = new PizZip(data);
+      const doc = new Docxtemplater(zip, {
+        paragraphLoop: true,
+        linebreaks: true,
+      });
+
+      // Extract all placeholders from the template
+      const fullText = doc.getFullText();
+      const placeholderRegex = /<<([^>]+)>>/g;
+      const matches = fullText.match(placeholderRegex);
+      
+      if (matches) {
+        const placeholders = matches.map((match) => match.replace(/<<|>>/g, ""));
+        const uniquePlaceholders = [...new Set(placeholders)];
+        setWordPlaceholders(uniquePlaceholders);
+        toast.success(`Found ${uniquePlaceholders.length} placeholders in template`);
+      } else {
+        toast.warning("No placeholders (<<field>>) found in Word template");
+      }
+    } catch (error) {
+      console.error("Error parsing Word template:", error);
+      toast.error("Failed to parse Word template");
     }
   };
 
@@ -111,6 +164,14 @@ const Index = () => {
             selectedFile={wordFile}
           />
         </div>
+
+        {/* Field Mapping Section */}
+        {excelFile && wordFile && excelHeaders.length > 0 && wordPlaceholders.length > 0 && (
+          <FieldMapping
+            excelHeaders={excelHeaders}
+            wordPlaceholders={wordPlaceholders}
+          />
+        )}
 
         {/* Processing Section */}
         {excelFile && wordFile && (
