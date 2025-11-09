@@ -33,8 +33,8 @@ export const ColumnSelector = ({
             <SelectValue placeholder="Select a column" />
           </SelectTrigger>
           <SelectContent>
-            {columns.map((column) => (
-              <SelectItem key={column} value={column}>
+            {columns.map((column, idx) => (
+              <SelectItem key={`${column}-${idx}`} value={column}>
                 {column}
               </SelectItem>
             ))}

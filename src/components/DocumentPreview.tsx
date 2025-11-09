@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Card } from "@/components/ui/card";
-import { FileText } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import { renderAsync } from "docx-preview";
@@ -14,6 +12,21 @@ interface DocumentPreviewProps {
   nameColumn?: string;
   wordFile?: File;
 }
+
+// Build template data: original headers + simplified keys (no parentheses, collapsed spaces)
+const buildTemplateData = (row: Record<string, string>) => {
+  const mapped: Record<string, string> = {};
+  for (const [key, value] of Object.entries(row)) {
+    mapped[key] = value ?? "";
+    const simplified = key
+      .replace(/\(.+?\)/g, "")
+      .replace(/<[^>]*>/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (simplified && !(simplified in mapped)) mapped[simplified] = value ?? "";
+  }
+  return mapped;
+};
 
 export const DocumentPreview = ({
   templateName,
@@ -42,7 +55,7 @@ export const DocumentPreview = ({
           linebreaks: true,
           delimiters: { start: "<<", end: ">>" },
         });
-        doc.setData(selectedRow);
+        doc.setData(buildTemplateData(selectedRow));
         doc.render();
         const out = doc.getZip().generate({
           type: "blob",
@@ -60,9 +73,7 @@ export const DocumentPreview = ({
 
   return (
     <Card className="p-6 h-full">
-      <h3 className="text-lg font-semibold mb-4 text-foreground">
-        Document Preview
-      </h3>
+      <h3 className="text-lg font-semibold mb-4 text-foreground">Document Preview</h3>
       {templateName && selectedName && selectedRow ? (
         <div className="space-y-4">
           <div
@@ -78,16 +89,15 @@ export const DocumentPreview = ({
               <p className="text-sm text-muted-foreground">Selected Name</p>
               <p className="font-medium text-foreground">{selectedName}</p>
             </div>
-            <div className="p-4 border-2 border-border rounded-lg">
+            <div className="p-4 border-2 border-border rounded-lg" dir="rtl">
               <p className="text-sm font-semibold mb-3 text-foreground">
-                Data that will be filled in the document:
+                Data that will be filled:
               </p>
               <div className="space-y-2 max-h-[400px] overflow-y-auto">
                 {Object.entries(selectedRow).map(([key, value]) => (
                   <div
                     key={key}
                     className="flex items-start gap-2 p-2 bg-muted rounded text-right"
-                    dir="rtl"
                   >
                     <span className="text-sm font-medium text-foreground min-w-[150px]">
                       {key}:

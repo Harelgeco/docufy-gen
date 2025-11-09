@@ -16,6 +16,23 @@ interface ExportOptionsProps {
   nameColumn?: string;
 }
 
+// Build a robust mapping for template: include original headers and simplified keys
+const buildTemplateData = (row: Record<string, string>) => {
+  const mapped: Record<string, string> = {};
+  for (const [key, value] of Object.entries(row)) {
+    // original
+    mapped[key] = value ?? "";
+    // simplified: remove anything in parentheses, collapse whitespace
+    const simplified = key
+      .replace(/\(.+?\)/g, "")
+      .replace(/<[^>]*>/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (simplified && !(simplified in mapped)) mapped[simplified] = value ?? "";
+  }
+  return mapped;
+};
+
 export const ExportOptions = ({
   disabled,
   selectedCount,
@@ -49,7 +66,9 @@ export const ExportOptions = ({
           delimiters: { start: "<<", end: ">>" },
         });
 
-        doc.setData(rowData);
+        // Map Excel columns to placeholders robustly
+        const dataForTemplate = buildTemplateData(rowData);
+        doc.setData(dataForTemplate);
 
         try {
           doc.render();
@@ -59,7 +78,7 @@ export const ExportOptions = ({
           continue;
         }
 
-        // Generate a DOCX blob and render to hidden container
+        // Generate DOCX blob and render to hidden container
         const outputBlob = doc.getZip().generate({
           type: "blob",
           mimeType:
@@ -68,13 +87,18 @@ export const ExportOptions = ({
 
         const tempContainer = document.createElement("div");
         tempContainer.style.position = "fixed";
-        tempContainer.style.top = "-10000px";
-        tempContainer.style.left = "-10000px";
+        tempContainer.style.top = "0";
+        tempContainer.style.left = "0";
         tempContainer.style.width = "794px"; // ~A4 width @ 96dpi
         tempContainer.style.background = "white";
+        tempContainer.style.opacity = "0";
+        tempContainer.style.pointerEvents = "none";
+        tempContainer.style.zIndex = "-1";
         document.body.appendChild(tempContainer);
 
         await renderAsync(outputBlob, tempContainer);
+        // Small delay to ensure layout fully applied
+        await new Promise((r) => setTimeout(r, 100));
 
         const fileName = `${name.replace(/[^a-zA-Z0-9\u0590-\u05FF]/g, "_")}.pdf`;
 
@@ -122,3 +146,4 @@ export const ExportOptions = ({
     </Card>
   );
 };
+
