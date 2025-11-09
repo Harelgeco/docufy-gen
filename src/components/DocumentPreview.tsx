@@ -43,19 +43,20 @@ export const DocumentPreview = ({
             </div>
             <div className="p-4 border-2 border-border rounded-lg">
               <p className="text-sm font-semibold mb-3 text-foreground">
-                Data for this person:
+                Data that will be filled in the document:
               </p>
               <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                {wordPlaceholders?.map((placeholder) => (
+                {Object.entries(selectedRow).map(([key, value]) => (
                   <div
-                    key={placeholder}
-                    className="flex items-start gap-2 p-2 bg-muted rounded"
+                    key={key}
+                    className="flex items-start gap-2 p-2 bg-muted rounded text-right"
+                    dir="rtl"
                   >
-                    <Badge variant="secondary" className="shrink-0">
-                      {placeholder}
-                    </Badge>
-                    <span className="text-sm text-foreground">
-                      {selectedRow[placeholder] || "(empty)"}
+                    <span className="text-sm font-medium text-foreground min-w-[150px]">
+                      {key}:
+                    </span>
+                    <span className="text-sm text-muted-foreground flex-1">
+                      {(value as string) || "(ריק)"}
                     </span>
                   </div>
                 ))}

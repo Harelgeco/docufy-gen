@@ -55,7 +55,22 @@ const Index = () => {
       
       // Skip first 5 rows (project title info), row 6 (index 5) has headers
       const headerRow = jsonData[5];
-      const headers = headerRow.map((header: any) => String(header).trim());
+      
+      // Handle duplicate headers by adding suffixes
+      const headers: string[] = [];
+      const headerCounts: { [key: string]: number } = {};
+      
+      headerRow.forEach((header: any) => {
+        let headerStr = String(header).trim();
+        if (headerCounts[headerStr]) {
+          headerCounts[headerStr]++;
+          headerStr = `${headerStr} ${headerCounts[headerStr]}`;
+        } else {
+          headerCounts[headerStr] = 1;
+        }
+        headers.push(headerStr);
+      });
+      
       setExcelHeaders(headers);
       
       // Store all data rows starting from row 7 (index 6)
@@ -206,6 +221,10 @@ const Index = () => {
                 <ExportOptions
                   disabled={selectedNames.length === 0}
                   selectedCount={selectedNames.length}
+                  wordFile={wordFile}
+                  excelData={excelData}
+                  selectedNames={selectedNames}
+                  nameColumn={selectedNameColumn}
                 />
               </div>
             </div>

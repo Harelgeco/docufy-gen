@@ -1,26 +1,83 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Download, Mail, FileCheck } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Download } from "lucide-react";
+import { toast } from "sonner";
+import Docxtemplater from "docxtemplater";
+import PizZip from "pizzip";
+import { saveAs } from "file-saver";
 
 interface ExportOptionsProps {
   disabled?: boolean;
   selectedCount: number;
+  wordFile?: File;
+  excelData?: any[];
+  selectedNames?: string[];
+  nameColumn?: string;
 }
 
 export const ExportOptions = ({
   disabled,
   selectedCount,
+  wordFile,
+  excelData,
+  selectedNames,
+  nameColumn,
 }: ExportOptionsProps) => {
-  const { toast } = useToast();
+  const generatePDFs = async () => {
+    if (!wordFile || !excelData || !selectedNames || !nameColumn) {
+      toast.error("Missing required data");
+      return;
+    }
 
-  const handleExport = (action: string) => {
-    toast({
-      title: `${action} initiated`,
-      description: `Processing ${selectedCount} document${
-        selectedCount > 1 ? "s" : ""
-      }...`,
-    });
+    try {
+      toast.info(`Generating ${selectedCount} document(s)...`);
+
+      const templateData = await wordFile.arrayBuffer();
+
+      for (const name of selectedNames) {
+        // Find the row data for this person
+        const rowData = excelData.find((row) => row[nameColumn] === name);
+        
+        if (!rowData) {
+          toast.error(`Data not found for ${name}`);
+          continue;
+        }
+
+        // Create a copy of the template
+        const zip = new PizZip(templateData);
+        const doc = new Docxtemplater(zip, {
+          paragraphLoop: true,
+          linebreaks: true,
+        });
+
+        // Set the template data - map Excel columns to placeholders
+        doc.setData(rowData);
+
+        try {
+          doc.render();
+        } catch (error) {
+          console.error("Error rendering document:", error);
+          toast.error(`Failed to generate document for ${name}`);
+          continue;
+        }
+
+        // Generate the document
+        const output = doc.getZip().generate({
+          type: "blob",
+          mimeType:
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        });
+
+        // Save the file
+        const fileName = `${name.replace(/[^a-zA-Z0-9\u0590-\u05FF]/g, "_")}.docx`;
+        saveAs(output, fileName);
+      }
+
+      toast.success(`Generated ${selectedCount} document(s) successfully!`);
+    } catch (error) {
+      console.error("Error generating documents:", error);
+      toast.error("Failed to generate documents");
+    }
   };
 
   return (
@@ -32,28 +89,10 @@ export const ExportOptions = ({
         <Button
           className="w-full justify-start"
           disabled={disabled}
-          onClick={() => handleExport("Save as PDF")}
+          onClick={generatePDFs}
         >
           <Download className="mr-2 h-4 w-4" />
-          Save as PDF
-        </Button>
-        <Button
-          className="w-full justify-start"
-          variant="secondary"
-          disabled={disabled}
-          onClick={() => handleExport("Email")}
-        >
-          <Mail className="mr-2 h-4 w-4" />
-          Send via Email
-        </Button>
-        <Button
-          className="w-full justify-start"
-          variant="outline"
-          disabled={disabled}
-          onClick={() => handleExport("Save and Send")}
-        >
-          <FileCheck className="mr-2 h-4 w-4" />
-          Save and Send
+          Generate Documents
         </Button>
       </div>
       {selectedCount > 0 && (
