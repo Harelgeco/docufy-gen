@@ -24,17 +24,12 @@ const Index = () => {
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data, { type: "array" });
       
-      // Look for sheet named "database"
-      if (!workbook.SheetNames.includes("database")) {
-        toast.error("Sheet 'database' not found in Excel file");
-        return;
-      }
-      
-      const worksheet = workbook.Sheets["database"];
+      // Use the first sheet
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[];
       
       if (jsonData.length === 0) {
-        toast.error("No data found in database sheet");
+        toast.error("No data found in Excel file");
         return;
       }
       
@@ -45,7 +40,7 @@ const Index = () => {
       );
       
       if (nameColumnIndex === -1) {
-        toast.error("Column 'שם מלא רוכש 1' not found in database sheet");
+        toast.error("Column 'שם מלא רוכש 1' not found in the table");
         return;
       }
       
