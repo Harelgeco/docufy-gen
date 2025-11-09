@@ -6,9 +6,6 @@ import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import { renderAsync } from "docx-preview";
 import html2pdf from "html2pdf.js";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import mammoth from "mammoth/mammoth.browser";
 
 interface ExportOptionsProps {
   disabled?: boolean;
@@ -75,8 +72,7 @@ export const ExportOptions = ({
             delimiters: { start: "<<", end: ">>" },
           });
 
-          doc.setData(buildTemplateData(rowData));
-          doc.render();
+          doc.render(buildTemplateData(rowData));
 
           // Generate filled DOCX blob
           const outputBlob = doc.getZip().generate({
@@ -86,7 +82,7 @@ export const ExportOptions = ({
 
           // Render into a visible container to ensure full layout (docx-preview preserves shapes/lines)
           const container = document.createElement("div");
-          container.style.cssText = `position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 794px; min-height: 1123px; background: white; padding: 20px; z-index: 99999; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);`;
+          container.style.cssText = `position: fixed; left: -10000px; top: 0; width: 794px; min-height: 1123px; background: white; padding: 0; z-index: -1;`;
           document.body.appendChild(container);
 
           // Wait fonts
@@ -110,6 +106,8 @@ export const ExportOptions = ({
             renderEndnotes: true,
             debug: false,
           });
+          // Ensure layout settled
+          await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 
           // Wait images
           const imgs = Array.from(container.querySelectorAll("img")) as HTMLImageElement[];
