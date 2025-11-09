@@ -4,6 +4,7 @@ import { NameSelector } from "@/components/NameSelector";
 import { DocumentPreview } from "@/components/DocumentPreview";
 import { ExportOptions } from "@/components/ExportOptions";
 import { FieldMapping } from "@/components/FieldMapping";
+import { ColumnSelector } from "@/components/ColumnSelector";
 import { FileText } from "lucide-react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
@@ -18,12 +19,19 @@ const Index = () => {
   const [excelHeaders, setExcelHeaders] = useState<string[]>([]);
   const [excelData, setExcelData] = useState<any[]>([]);
   const [wordPlaceholders, setWordPlaceholders] = useState<string[]>([]);
+  const [selectedNameColumn, setSelectedNameColumn] = useState<string>("שם מלא רוכש 1");
 
   useEffect(() => {
     if (excelFile) {
       parseExcelFile(excelFile);
     }
   }, [excelFile]);
+
+  useEffect(() => {
+    if (excelData.length > 0 && selectedNameColumn) {
+      updateNamesFromColumn(selectedNameColumn);
+    }
+  }, [selectedNameColumn, excelData]);
 
   useEffect(() => {
     if (wordFile) {
@@ -50,16 +58,6 @@ const Index = () => {
       const headers = headerRow.map((header: any) => String(header).trim());
       setExcelHeaders(headers);
       
-      // Find the column index for "שם מלא רוכש 1"
-      const nameColumnIndex = headers.findIndex((header: string) => 
-        header === "שם מלא רוכש 1"
-      );
-      
-      if (nameColumnIndex === -1) {
-        toast.error("Column 'שם מלא רוכש 1' not found in the table");
-        return;
-      }
-      
       // Store all data rows starting from row 7 (index 6)
       const dataRows = jsonData.slice(6).map((row: any) => {
         const rowData: any = {};
@@ -71,17 +69,30 @@ const Index = () => {
       
       setExcelData(dataRows);
       
-      // Extract names from the specific column
-      const extractedNames = dataRows
-        .map((row: any) => row["שם מלא רוכש 1"])
-        .filter((name: string) => name && name.trim() !== "");
+      // Set default column if it exists
+      if (headers.includes("שם מלא רוכש 1")) {
+        setSelectedNameColumn("שם מלא רוכש 1");
+      } else if (headers.length > 0) {
+        setSelectedNameColumn(headers[0]);
+      }
       
-      setNames(extractedNames);
-      toast.success(`Loaded ${extractedNames.length} names and ${headers.length} columns`);
+      toast.success(`Loaded ${dataRows.length} rows and ${headers.length} columns`);
     } catch (error) {
       console.error("Error parsing Excel file:", error);
       toast.error("Failed to parse Excel file");
     }
+  };
+
+  const updateNamesFromColumn = (columnName: string) => {
+    if (!excelData.length) return;
+    
+    const extractedNames = excelData
+      .map((row: any) => row[columnName])
+      .filter((name: string) => name && name.trim() !== "");
+    
+    setNames(extractedNames);
+    setSelectedNames([]);
+    toast.success(`Loaded ${extractedNames.length} names from '${columnName}'`);
   };
 
   const parseWordTemplate = async (file: File) => {
@@ -164,6 +175,15 @@ const Index = () => {
             selectedFile={wordFile}
           />
         </div>
+
+        {/* Column Selection */}
+        {excelFile && excelHeaders.length > 0 && (
+          <ColumnSelector
+            columns={excelHeaders}
+            selectedColumn={selectedNameColumn}
+            onColumnChange={setSelectedNameColumn}
+          />
+        )}
 
         {/* Field Mapping Section */}
         {excelFile && wordFile && excelHeaders.length > 0 && wordPlaceholders.length > 0 && (
