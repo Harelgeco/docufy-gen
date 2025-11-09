@@ -2,7 +2,10 @@ import { useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
-import { renderAsync } from "docx-preview";
+// Use Mammoth browser build to convert DOCX -> HTML with inline images
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import mammoth from "mammoth/mammoth.browser";
 
 interface DocumentPreviewProps {
   templateName?: string;
@@ -33,65 +36,6 @@ const buildTemplateData = (row: Record<string, string>) => {
   return mapped;
 };
 
-// Extract header images from the DOCX zip (header1/2/3.xml.rels -> word/media/*)
-const extractHeaderImageURLs = async (zip: any): Promise<string[]> => {
-  try {
-    const urls: string[] = [];
-    const files = zip.files as Record<string, any>;
-    const relFiles = Object.keys(files).filter((k) => /^word\/_rels\/header\d+\.xml\.rels$/.test(k));
-    for (const relPath of relFiles) {
-      const relText = zip.file(relPath)?.asText();
-      if (!relText) continue;
-      const xml = new DOMParser().parseFromString(relText, "application/xml");
-      const relationships = Array.from(xml.getElementsByTagName("Relationship"));
-      for (const rel of relationships) {
-        const target = rel.getAttribute("Target") || "";
-        const type = (rel.getAttribute("Type") || "").toLowerCase();
-        if (!target) continue;
-        if (target.includes("media/") || type.includes("/image")) {
-          const normalized = "word/" + target.replace(/^\.\.\//, "");
-          const img = zip.file(normalized);
-          if (!img) continue;
-          const uint8 = img.asUint8Array();
-          const ext = normalized.split(".").pop()?.toLowerCase();
-          const mime = ext === "png" ? "image/png" : ext === "jpg" || ext === "jpeg" ? "image/jpeg" : "image/*";
-          const blob = new Blob([uint8], { type: mime });
-          const url = URL.createObjectURL(blob);
-          urls.push(url);
-        }
-      }
-    }
-    return urls;
-  } catch (e) {
-    console.warn("Header image extraction failed", e);
-    return [];
-  }
-};
-
-// Fallback: return all images under word/media
-const extractAllMediaImages = (zip: any): string[] => {
-  try {
-    const urls: string[] = [];
-    const files = zip.files as Record<string, any>;
-    const mediaFiles = Object.keys(files).filter((k) => /^word\/media\//.test(k));
-    for (const path of mediaFiles) {
-      const ext = path.split(".").pop()?.toLowerCase();
-      if (!ext || !["png", "jpg", "jpeg", "gif", "bmp", "webp"].includes(ext)) continue;
-      const f = zip.file(path);
-      if (!f) continue;
-      const uint8 = f.asUint8Array();
-      const mime = ext === "png" ? "image/png" : ext === "jpg" || ext === "jpeg" ? "image/jpeg" : `image/${ext}`;
-      const blob = new Blob([uint8], { type: mime });
-      const url = URL.createObjectURL(blob);
-      urls.push(url);
-    }
-    return urls;
-  } catch (e) {
-    console.warn("Media image extraction failed", e);
-    return [];
-  }
-};
-
 export const DocumentPreview = ({
   templateName,
   selectedName,
@@ -112,6 +56,7 @@ export const DocumentPreview = ({
         const rowData = excelData.find((row) => row[nameColumn] === selectedName);
         if (!rowData) return;
 
+        // Read the Word template and fill placeholders
         const data = await wordFile.arrayBuffer();
         const zip = new PizZip(data);
         const doc = new Docxtemplater(zip, {
@@ -123,74 +68,40 @@ export const DocumentPreview = ({
         doc.setData(buildTemplateData(rowData));
         doc.render();
 
-        const output = doc.getZip().generate({
-          type: "blob",
-          mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        });
+        // Generate ArrayBuffer and convert to HTML with Mammoth (images inlined as base64)
+        const filledBuffer: ArrayBuffer = doc.getZip().generate({ type: "arraybuffer" });
+        const result = await mammoth.convertToHtml(
+          { arrayBuffer: filledBuffer },
+          {
+            convertImage: mammoth.images.inline(async (element: any) => {
+              const base64 = await element.read("base64");
+              return { src: `data:${element.contentType};base64,${base64}` };
+            }),
+          }
+        );
 
-        containerRef.current.innerHTML = "";
-        
-        // Prepend header images manually if present; fallback to all media if none
-        let headerUrls = await extractHeaderImageURLs(doc.getZip());
-        if (!headerUrls.length) headerUrls = extractAllMediaImages(doc.getZip());
-        if (headerUrls.length) {
-          const headerDiv = document.createElement("div");
-          headerDiv.style.textAlign = "right";
-          headerDiv.style.marginBottom = "12px";
-          headerDiv.dir = "rtl";
-          headerUrls.forEach((u) => {
-            const img = new Image();
-            img.src = u;
-            img.style.maxWidth = "100%";
-            img.style.height = "auto";
-            img.style.display = "block";
-            headerDiv.appendChild(img);
-          });
-          containerRef.current.appendChild(headerDiv);
-        }
-        
-        // Render with all options enabled to show images
-        await renderAsync(output, containerRef.current, undefined, {
-          className: "docx-preview",
-          inWrapper: true,
-          ignoreWidth: false,
-          ignoreHeight: false,
-          ignoreFonts: false,
-          breakPages: true,
-          ignoreLastRenderedPageBreak: false,
-          experimental: false,
-          trimXmlDeclaration: true,
-          useBase64URL: true,
-          renderHeaders: true,
-          renderFooters: true,
-          renderFootnotes: true,
-          renderEndnotes: true,
-          debug: false,
-        });
+        // Render HTML into container
+        const html = result.value as string;
+        containerRef.current.innerHTML = `<div class="mammoth-doc" dir="rtl">${html}</div>`;
 
-        // Wait for images to load
-        const images = containerRef.current.querySelectorAll('img');
+        // Ensure images are loaded before finishing
+        const images = Array.from(containerRef.current.querySelectorAll("img")) as HTMLImageElement[];
         await Promise.all(
-          Array.from(images).map((img: HTMLImageElement) =>
-            new Promise<void>((resolve) => {
-              if (img.complete) {
-                resolve();
-              } else {
+          images.map(
+            (img) =>
+              new Promise<void>((resolve) => {
+                if (img.complete && img.naturalWidth > 0) return resolve();
                 img.onload = () => resolve();
-                img.onerror = () => {
-                  console.error('Image failed to load:', img.src);
-                  resolve();
-                };
+                img.onerror = () => resolve();
                 setTimeout(() => resolve(), 5000);
-              }
-            })
+              })
           )
         );
 
+        // Show data mapping list
         previewDataRef.current.innerHTML = "";
         const dataList = document.createElement("div");
         dataList.className = "space-y-2";
-        
         Object.entries(rowData).forEach(([key, value]) => {
           const item = document.createElement("div");
           item.className = "flex items-start gap-2 p-2 bg-muted rounded text-right";
@@ -201,12 +112,11 @@ export const DocumentPreview = ({
           `;
           dataList.appendChild(item);
         });
-        
         previewDataRef.current.appendChild(dataList);
       } catch (error) {
         console.error("Preview render error:", error);
         if (containerRef.current) {
-          containerRef.current.innerHTML = `<p class="text-destructive">Failed to render preview: ${error}</p>`;
+          containerRef.current.innerHTML = `<p class="text-destructive">Failed to render preview</p>`;
         }
       }
     };
@@ -216,15 +126,13 @@ export const DocumentPreview = ({
 
   return (
     <Card className="p-6 h-full">
-      <h3 className="text-lg font-semibold mb-4 text-foreground">
-        Document Preview
-      </h3>
+      <h3 className="text-lg font-semibold mb-4 text-foreground">Document Preview</h3>
       {templateName && selectedName ? (
         <div className="space-y-4">
           <div
             ref={containerRef}
             className="border rounded-lg overflow-auto max-h-[600px] bg-white p-4"
-            style={{ minHeight: '400px' }}
+            style={{ minHeight: "400px" }}
           />
           <div className="space-y-2">
             <div className="p-4 bg-muted rounded-lg">
@@ -236,21 +144,14 @@ export const DocumentPreview = ({
               <p className="font-medium text-foreground">{selectedName}</p>
             </div>
             <div className="p-4 border-2 border-border rounded-lg">
-              <p className="text-sm font-semibold mb-3 text-foreground">
-                Data that will be filled:
-              </p>
-              <div
-                ref={previewDataRef}
-                className="max-h-[300px] overflow-y-auto"
-              />
+              <p className="text-sm font-semibold mb-3 text-foreground">Data that will be filled:</p>
+              <div ref={previewDataRef} className="max-h-[300px] overflow-y-auto" />
             </div>
           </div>
         </div>
       ) : (
         <div className="flex items-center justify-center h-[400px] bg-muted rounded-lg">
-          <p className="text-muted-foreground">
-            Upload files and select a name to see preview
-          </p>
+          <p className="text-muted-foreground">Upload files and select a name to see preview</p>
         </div>
       )}
     </Card>
