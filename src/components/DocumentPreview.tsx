@@ -12,6 +12,27 @@ interface DocumentPreviewProps {
   wordFile?: File;
 }
 
+const normalizeKey = (s: string) =>
+  (s ?? "")
+    .replace(/\u00A0/g, " ")
+    .replace(/<br\s*\/?\>/gi, " ")
+    .replace(/\r?\n|\r|\t/g, " ")
+    .replace(/\(.+?\)/g, " ")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const buildTemplateData = (row: Record<string, string>) => {
+  const mapped: Record<string, string> = {};
+  for (const [key, value] of Object.entries(row)) {
+    const v = value ?? "";
+    mapped[key] = v;
+    const simplified = normalizeKey(key);
+    if (simplified && !(simplified in mapped)) mapped[simplified] = v;
+  }
+  return mapped;
+};
+
 export const DocumentPreview = ({
   templateName,
   selectedName,
@@ -43,7 +64,7 @@ export const DocumentPreview = ({
         });
 
         // Set the data
-        doc.setData(rowData);
+        doc.setData(buildTemplateData(rowData));
         doc.render();
 
         // Generate the filled document
@@ -65,6 +86,7 @@ export const DocumentPreview = ({
           experimental: false,
           trimXmlDeclaration: true,
           debug: false,
+          useBase64URL: true,
         });
 
         // Show the data being filled
