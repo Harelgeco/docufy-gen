@@ -82,7 +82,7 @@ export const ExportOptions = ({
 
           // Render into a visible container to ensure full layout (docx-preview preserves shapes/lines)
           const container = document.createElement("div");
-          container.style.cssText = `position: fixed; left: -10000px; top: 0; width: 794px; min-height: 1123px; background: white; padding: 0; z-index: -1;`;
+          container.style.cssText = `position: fixed; left: 0; top: 0; width: 794px; min-height: 1123px; background: white; padding: 0; opacity: 0; pointer-events: none; z-index: 1;`;
           document.body.appendChild(container);
 
           // Wait fonts

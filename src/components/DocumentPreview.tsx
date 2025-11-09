@@ -62,8 +62,7 @@ export const DocumentPreview = ({
           delimiters: { start: "<<", end: ">>" },
         });
 
-        doc.setData(buildTemplateData(rowData));
-        doc.render();
+        doc.render(buildTemplateData(rowData));
 
         // Generate filled DOCX blob
         const outputBlob = doc.getZip().generate({
