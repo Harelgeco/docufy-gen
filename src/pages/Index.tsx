@@ -235,6 +235,7 @@ const Index = () => {
                 excelData={excelData}
                 wordPlaceholders={wordPlaceholders}
                 nameColumn={selectedNameColumn}
+                wordFile={wordFile}
               />
             </div>
           </div>

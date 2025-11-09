@@ -1,6 +1,10 @@
+import { useEffect, useMemo, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import Docxtemplater from "docxtemplater";
+import PizZip from "pizzip";
+import { renderAsync } from "docx-preview";
 
 interface DocumentPreviewProps {
   templateName?: string;
@@ -8,6 +12,7 @@ interface DocumentPreviewProps {
   excelData?: any[];
   wordPlaceholders?: string[];
   nameColumn?: string;
+  wordFile?: File;
 }
 
 export const DocumentPreview = ({
@@ -16,11 +21,42 @@ export const DocumentPreview = ({
   excelData,
   wordPlaceholders,
   nameColumn,
+  wordFile,
 }: DocumentPreviewProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
   // Find the data row for the selected name
-  const selectedRow = excelData?.find(
-    (row) => row[nameColumn || ""] === selectedName
+  const selectedRow = useMemo(
+    () => excelData?.find((row) => row[nameColumn || ""] === selectedName),
+    [excelData, nameColumn, selectedName]
   );
+
+  useEffect(() => {
+    const doRender = async () => {
+      if (!wordFile || !selectedRow || !containerRef.current) return;
+      try {
+        const data = await wordFile.arrayBuffer();
+        const zip = new PizZip(data);
+        const doc = new Docxtemplater(zip, {
+          paragraphLoop: true,
+          linebreaks: true,
+          delimiters: { start: "<<", end: ">>" },
+        });
+        doc.setData(selectedRow);
+        doc.render();
+        const out = doc.getZip().generate({
+          type: "blob",
+          mimeType:
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        });
+        containerRef.current.innerHTML = "";
+        await renderAsync(out, containerRef.current);
+      } catch (e) {
+        console.error("Preview render failed", e);
+      }
+    };
+    doRender();
+  }, [wordFile, selectedRow]);
 
   return (
     <Card className="p-6 h-full">
@@ -29,9 +65,10 @@ export const DocumentPreview = ({
       </h3>
       {templateName && selectedName && selectedRow ? (
         <div className="space-y-4">
-          <div className="flex items-center justify-center p-8 bg-muted rounded-lg">
-            <FileText className="w-16 h-16 text-muted-foreground" />
-          </div>
+          <div
+            ref={containerRef}
+            className="p-4 bg-muted rounded-lg overflow-auto max-h-[600px]"
+          />
           <div className="space-y-2">
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground">Template</p>

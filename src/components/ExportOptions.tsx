@@ -4,7 +4,8 @@ import { Download } from "lucide-react";
 import { toast } from "sonner";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
-import { saveAs } from "file-saver";
+import { renderAsync } from "docx-preview";
+import html2pdf from "html2pdf.js";
 
 interface ExportOptionsProps {
   disabled?: boolean;
@@ -30,27 +31,24 @@ export const ExportOptions = ({
     }
 
     try {
-      toast.info(`Generating ${selectedCount} document(s)...`);
+      toast.info(`Generating ${selectedCount} PDF(s)...`);
 
       const templateData = await wordFile.arrayBuffer();
 
       for (const name of selectedNames) {
-        // Find the row data for this person
         const rowData = excelData.find((row) => row[nameColumn] === name);
-        
         if (!rowData) {
           toast.error(`Data not found for ${name}`);
           continue;
         }
 
-        // Create a copy of the template
         const zip = new PizZip(templateData);
         const doc = new Docxtemplater(zip, {
           paragraphLoop: true,
           linebreaks: true,
+          delimiters: { start: "<<", end: ">>" },
         });
 
-        // Set the template data - map Excel columns to placeholders
         doc.setData(rowData);
 
         try {
@@ -61,22 +59,43 @@ export const ExportOptions = ({
           continue;
         }
 
-        // Generate the document
-        const output = doc.getZip().generate({
+        // Generate a DOCX blob and render to hidden container
+        const outputBlob = doc.getZip().generate({
           type: "blob",
           mimeType:
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         });
 
-        // Save the file
-        const fileName = `${name.replace(/[^a-zA-Z0-9\u0590-\u05FF]/g, "_")}.docx`;
-        saveAs(output, fileName);
+        const tempContainer = document.createElement("div");
+        tempContainer.style.position = "fixed";
+        tempContainer.style.top = "-10000px";
+        tempContainer.style.left = "-10000px";
+        tempContainer.style.width = "794px"; // ~A4 width @ 96dpi
+        tempContainer.style.background = "white";
+        document.body.appendChild(tempContainer);
+
+        await renderAsync(outputBlob, tempContainer);
+
+        const fileName = `${name.replace(/[^a-zA-Z0-9\u0590-\u05FF]/g, "_")}.pdf`;
+
+        await html2pdf()
+          .set({
+            margin: 10,
+            filename: fileName,
+            image: { type: "jpeg", quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+          })
+          .from(tempContainer)
+          .save();
+
+        document.body.removeChild(tempContainer);
       }
 
-      toast.success(`Generated ${selectedCount} document(s) successfully!`);
+      toast.success(`Generated ${selectedCount} PDF(s) successfully!`);
     } catch (error) {
-      console.error("Error generating documents:", error);
-      toast.error("Failed to generate documents");
+      console.error("Error generating PDFs:", error);
+      toast.error("Failed to generate PDFs");
     }
   };
 
@@ -92,7 +111,7 @@ export const ExportOptions = ({
           onClick={generatePDFs}
         >
           <Download className="mr-2 h-4 w-4" />
-          Generate Documents
+          Download PDF(s)
         </Button>
       </div>
       {selectedCount > 0 && (
