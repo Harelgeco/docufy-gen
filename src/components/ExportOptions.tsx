@@ -4,6 +4,7 @@ import { Download } from "lucide-react";
 import { toast } from "sonner";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
+import { renderAsync } from "docx-preview";
 import html2pdf from "html2pdf.js";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -77,26 +78,40 @@ export const ExportOptions = ({
           doc.setData(buildTemplateData(rowData));
           doc.render();
 
-          // Convert filled docx to HTML via Mammoth (images inlined as base64)
-          const filledBuffer: ArrayBuffer = doc.getZip().generate({ type: "arraybuffer" });
-          const result = await mammoth.convertToHtml(
-            { arrayBuffer: filledBuffer },
-            {
-              convertImage: mammoth.images.inline(async (element: any) => {
-                const base64 = await element.read("base64");
-                return { src: `data:${element.contentType};base64,${base64}` };
-              }),
-            }
-          );
+          // Generate filled DOCX blob
+          const outputBlob = doc.getZip().generate({
+            type: "blob",
+            mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          });
 
-          // Render into a visible container to ensure full layout
+          // Render into a visible container to ensure full layout (docx-preview preserves shapes/lines)
           const container = document.createElement("div");
           container.style.cssText = `position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 794px; min-height: 1123px; background: white; padding: 20px; z-index: 99999; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);`;
-          container.innerHTML = `<div class="mammoth-doc" dir="rtl">${result.value}</div>`;
           document.body.appendChild(container);
 
-          // Wait fonts and images
+          // Wait fonts
           await document.fonts.ready.catch(() => {});
+
+          // Render DOCX with images embedded
+          await renderAsync(outputBlob, container, undefined, {
+            className: "docx-wrapper",
+            inWrapper: true,
+            ignoreWidth: false,
+            ignoreHeight: false,
+            ignoreFonts: false,
+            breakPages: true,
+            ignoreLastRenderedPageBreak: false,
+            experimental: false,
+            trimXmlDeclaration: true,
+            useBase64URL: true,
+            renderHeaders: true,
+            renderFooters: true,
+            renderFootnotes: true,
+            renderEndnotes: true,
+            debug: false,
+          });
+
+          // Wait images
           const imgs = Array.from(container.querySelectorAll("img")) as HTMLImageElement[];
           await Promise.all(
             imgs.map(
