@@ -33,6 +33,41 @@ const buildTemplateData = (row: Record<string, string>) => {
   return mapped;
 };
 
+// Extract header images from the DOCX zip (header1/2/3.xml.rels -> word/media/*)
+const extractHeaderImageURLs = async (zip: any): Promise<string[]> => {
+  try {
+    const urls: string[] = [];
+    const files = zip.files as Record<string, any>;
+    const relFiles = Object.keys(files).filter((k) => /^word\/_rels\/header\d+\.xml\.rels$/.test(k));
+    for (const relPath of relFiles) {
+      const relText = zip.file(relPath)?.asText();
+      if (!relText) continue;
+      const xml = new DOMParser().parseFromString(relText, "application/xml");
+      const relationships = Array.from(xml.getElementsByTagName("Relationship"));
+      for (const rel of relationships) {
+        const target = rel.getAttribute("Target") || "";
+        const type = (rel.getAttribute("Type") || "").toLowerCase();
+        if (!target) continue;
+        if (target.includes("media/") || type.includes("/image")) {
+          const normalized = "word/" + target.replace(/^\.\.\//, "");
+          const img = zip.file(normalized);
+          if (!img) continue;
+          const uint8 = img.asUint8Array();
+          const ext = normalized.split(".").pop()?.toLowerCase();
+          const mime = ext === "png" ? "image/png" : ext === "jpg" || ext === "jpeg" ? "image/jpeg" : "image/*";
+          const blob = new Blob([uint8], { type: mime });
+          const url = URL.createObjectURL(blob);
+          urls.push(url);
+        }
+      }
+    }
+    return urls;
+  } catch (e) {
+    console.warn("Header image extraction failed", e);
+    return [];
+  }
+};
+
 export const DocumentPreview = ({
   templateName,
   selectedName,
@@ -71,6 +106,24 @@ export const DocumentPreview = ({
 
         containerRef.current.innerHTML = "";
         
+        // Prepend header images manually if present
+        const headerUrls = await extractHeaderImageURLs(doc.getZip());
+        if (headerUrls.length) {
+          const headerDiv = document.createElement("div");
+          headerDiv.style.textAlign = "right";
+          headerDiv.style.marginBottom = "12px";
+          headerDiv.dir = "rtl";
+          headerUrls.forEach((u) => {
+            const img = new Image();
+            img.src = u;
+            img.style.maxWidth = "100%";
+            img.style.height = "auto";
+            img.style.display = "block";
+            headerDiv.appendChild(img);
+          });
+          containerRef.current.appendChild(headerDiv);
+        }
+        
         // Render with all options enabled to show images
         await renderAsync(output, containerRef.current, undefined, {
           className: "docx-preview",
@@ -82,7 +135,7 @@ export const DocumentPreview = ({
           ignoreLastRenderedPageBreak: false,
           experimental: false,
           trimXmlDeclaration: true,
-          useBase64URL: false, // Changed to false to avoid blob URL issues
+          useBase64URL: true,
           renderHeaders: true,
           renderFooters: true,
           renderFootnotes: true,

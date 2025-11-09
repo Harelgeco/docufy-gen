@@ -37,6 +37,41 @@ const buildTemplateData = (row: Record<string, string>) => {
   return mapped;
 };
 
+// Extract header images from DOCX zip
+const extractHeaderImageURLs = async (zip: any): Promise<string[]> => {
+  try {
+    const urls: string[] = [];
+    const files = zip.files as Record<string, any>;
+    const relFiles = Object.keys(files).filter((k) => /^word\/_rels\/header\d+\.xml\.rels$/.test(k));
+    for (const relPath of relFiles) {
+      const relText = zip.file(relPath)?.asText();
+      if (!relText) continue;
+      const xml = new DOMParser().parseFromString(relText, "application/xml");
+      const relationships = Array.from(xml.getElementsByTagName("Relationship"));
+      for (const rel of relationships) {
+        const target = rel.getAttribute("Target") || "";
+        const type = (rel.getAttribute("Type") || "").toLowerCase();
+        if (!target) continue;
+        if (target.includes("media/") || type.includes("/image")) {
+          const normalized = "word/" + target.replace(/^\.\.\//, "");
+          const img = zip.file(normalized);
+          if (!img) continue;
+          const uint8 = img.asUint8Array();
+          const ext = normalized.split(".").pop()?.toLowerCase();
+          const mime = ext === "png" ? "image/png" : ext === "jpg" || ext === "jpeg" ? "image/jpeg" : "image/*";
+          const blob = new Blob([uint8], { type: mime });
+          const url = URL.createObjectURL(blob);
+          urls.push(url);
+        }
+      }
+    }
+    return urls;
+  } catch (e) {
+    console.warn("Header image extraction failed", e);
+    return [];
+  }
+};
+
 export const ExportOptions = ({
   disabled,
   selectedCount,
@@ -103,6 +138,23 @@ export const ExportOptions = ({
           document.body.appendChild(loadingDiv);
 
           // Render with all features enabled
+          // Prepend header images manually if present
+          const headerUrls = await extractHeaderImageURLs(doc.getZip());
+          if (headerUrls.length) {
+            const headerDiv = document.createElement('div');
+            headerDiv.style.cssText = 'text-align:right;margin-bottom:12px;';
+            headerDiv.dir = 'rtl';
+            headerUrls.forEach((u) => {
+              const img = new Image();
+              img.src = u;
+              img.style.maxWidth = '100%';
+              img.style.height = 'auto';
+              img.style.display = 'block';
+              headerDiv.appendChild(img);
+            });
+            container.appendChild(headerDiv);
+          }
+
           await renderAsync(outputBlob, container, undefined, {
             className: "docx-wrapper",
             inWrapper: true,
@@ -113,7 +165,7 @@ export const ExportOptions = ({
             ignoreLastRenderedPageBreak: false,
             experimental: false,
             trimXmlDeclaration: true,
-            useBase64URL: false, // Critical: use regular URLs for images
+            useBase64URL: true,
             renderHeaders: true,
             renderFooters: true,
             renderFootnotes: true,
@@ -157,7 +209,7 @@ export const ExportOptions = ({
 
           const fileName = `${name.replace(/[^a-zA-Z0-9\u0590-\u05FF]/g, '_')}.pdf`;
           
-          const content = container.querySelector('.docx') as HTMLElement || container;
+          const content = container as HTMLElement;
 
           // Generate PDF with maximum quality
           await html2pdf()
