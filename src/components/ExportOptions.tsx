@@ -6,6 +6,7 @@ import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import { renderAsync } from "docx-preview";
 import html2pdf from "html2pdf.js";
+import { saveAs } from "file-saver";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import mammoth from "mammoth/mammoth.browser";
@@ -154,10 +155,64 @@ export const ExportOptions = ({
     }
   };
 
+  const generateDOCXs = async () => {
+    if (!wordFile || !excelData || !selectedNames || !nameColumn) {
+      toast.error("Missing required data");
+      return;
+    }
+    try {
+      toast.info(`Generating ${selectedCount} DOCX file(s)... Please wait.`);
+      const templateData = await wordFile.arrayBuffer();
+      let successCount = 0;
+
+      for (const name of selectedNames) {
+        try {
+          const rowData = excelData.find((row) => row[nameColumn] === name);
+          if (!rowData) {
+            toast.error(`Data not found for ${name}`);
+            continue;
+          }
+
+          const zip = new PizZip(templateData);
+          const doc = new Docxtemplater(zip, {
+            paragraphLoop: true,
+            linebreaks: true,
+            delimiters: { start: "<<", end: ">>" },
+          });
+
+          doc.setData(buildTemplateData(rowData));
+          doc.render();
+
+          const outputBlob = doc.getZip().generate({
+            type: "blob",
+            mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          });
+
+          const fileName = `${name.replace(/[^a-zA-Z0-9\u0590-\u05FF]/g, "_")}.docx`;
+          saveAs(outputBlob, fileName);
+          successCount++;
+          await new Promise((r) => setTimeout(r, 150));
+        } catch (err) {
+          console.error("DOCX generation failed for", name, err);
+          toast.error(`Failed to generate DOCX for ${name}`);
+        }
+      }
+
+      if (successCount > 0) toast.success(`Generated ${successCount} DOCX file(s)`);
+    } catch (error) {
+      console.error("Error in DOCX generation:", error);
+      toast.error("Failed to generate DOCX files");
+    }
+  };
+
   return (
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-4 text-foreground">Export Options</h3>
       <div className="space-y-3">
+        <Button className="w-full justify-start" disabled={disabled} onClick={generateDOCXs}>
+          <Download className="mr-2 h-4 w-4" />
+          Download DOCX(s)
+        </Button>
         <Button className="w-full justify-start" disabled={disabled} onClick={generatePDFs}>
           <Download className="mr-2 h-4 w-4" />
           Download PDF(s)
