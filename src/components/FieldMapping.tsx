@@ -1,6 +1,12 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
+import { useState } from "react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 interface FieldMappingProps {
   excelHeaders: string[];
@@ -11,12 +17,25 @@ export const FieldMapping = ({
   excelHeaders,
   wordPlaceholders,
 }: FieldMappingProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <Card className="p-6 mb-6">
-      <h3 className="text-lg font-semibold mb-4 text-foreground">
-        Field Mapping
-      </h3>
-      <div className="grid md:grid-cols-2 gap-6">
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger className="w-full">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-foreground">
+              Field Mapping
+            </h3>
+            <ChevronDown
+              className={`h-5 w-5 transition-transform ${
+                isOpen ? "transform rotate-180" : ""
+              }`}
+            />
+          </div>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="grid md:grid-cols-2 gap-6 mt-4">
         <div>
           <h4 className="text-sm font-medium mb-3 text-muted-foreground">
             Excel Headers ({excelHeaders.length})
@@ -50,8 +69,10 @@ export const FieldMapping = ({
               </div>
             ))}
           </div>
+          </div>
         </div>
-      </div>
+        </CollapsibleContent>
+      </Collapsible>
     </Card>
   );
 };

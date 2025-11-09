@@ -213,6 +213,9 @@ const Index = () => {
               <DocumentPreview
                 templateName={wordFile.name}
                 selectedName={selectedNames[0]}
+                excelData={excelData}
+                wordPlaceholders={wordPlaceholders}
+                nameColumn={selectedNameColumn}
               />
             </div>
           </div>
