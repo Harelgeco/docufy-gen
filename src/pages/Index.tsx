@@ -246,7 +246,6 @@ const Index = () => {
                 templateName={wordFile.name}
                 selectedName={selectedNames[0]}
                 excelData={excelData}
-                wordPlaceholders={wordPlaceholders}
                 nameColumn={selectedNameColumn}
                 wordFile={wordFile}
               />

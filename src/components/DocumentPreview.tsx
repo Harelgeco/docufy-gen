@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
@@ -8,46 +8,32 @@ interface DocumentPreviewProps {
   templateName?: string;
   selectedName?: string;
   excelData?: any[];
-  wordPlaceholders?: string[];
   nameColumn?: string;
   wordFile?: File;
 }
-
-// Build template data: original headers + simplified keys (no parentheses, collapsed spaces)
-const buildTemplateData = (row: Record<string, string>) => {
-  const mapped: Record<string, string> = {};
-  for (const [key, value] of Object.entries(row)) {
-    mapped[key] = value ?? "";
-    const simplified = key
-      .replace(/\(.+?\)/g, "")
-      .replace(/<[^>]*>/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
-    if (simplified && !(simplified in mapped)) mapped[simplified] = value ?? "";
-  }
-  return mapped;
-};
 
 export const DocumentPreview = ({
   templateName,
   selectedName,
   excelData,
-  wordPlaceholders,
   nameColumn,
   wordFile,
 }: DocumentPreviewProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-
-  // Find the data row for the selected name
-  const selectedRow = useMemo(
-    () => excelData?.find((row) => row[nameColumn || ""] === selectedName),
-    [excelData, nameColumn, selectedName]
-  );
+  const previewDataRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const doRender = async () => {
-      if (!wordFile || !selectedRow || !containerRef.current) return;
+    const renderPreview = async () => {
+      if (!wordFile || !selectedName || !excelData || !nameColumn || !containerRef.current || !previewDataRef.current) {
+        return;
+      }
+
       try {
+        // Find the row data for this person
+        const rowData = excelData.find((row) => row[nameColumn] === selectedName);
+        if (!rowData) return;
+
+        // Read the Word template
         const data = await wordFile.arrayBuffer();
         const zip = new PizZip(data);
         const doc = new Docxtemplater(zip, {
@@ -55,30 +41,70 @@ export const DocumentPreview = ({
           linebreaks: true,
           delimiters: { start: "<<", end: ">>" },
         });
-        doc.setData(buildTemplateData(selectedRow));
+
+        // Set the data
+        doc.setData(rowData);
         doc.render();
-        const out = doc.getZip().generate({
+
+        // Generate the filled document
+        const output = doc.getZip().generate({
           type: "blob",
-          mimeType:
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         });
+
+        // Clear and render the preview
         containerRef.current.innerHTML = "";
-        await renderAsync(out, containerRef.current);
-      } catch (e) {
-        console.error("Preview render failed", e);
+        await renderAsync(output, containerRef.current, undefined, {
+          className: "docx-preview",
+          inWrapper: true,
+          ignoreWidth: false,
+          ignoreHeight: false,
+          ignoreFonts: false,
+          breakPages: true,
+          ignoreLastRenderedPageBreak: false,
+          experimental: false,
+          trimXmlDeclaration: true,
+          debug: false,
+        });
+
+        // Show the data being filled
+        previewDataRef.current.innerHTML = "";
+        const dataList = document.createElement("div");
+        dataList.className = "space-y-2";
+        
+        Object.entries(rowData).forEach(([key, value]) => {
+          const item = document.createElement("div");
+          item.className = "flex items-start gap-2 p-2 bg-muted rounded text-right";
+          item.dir = "rtl";
+          item.innerHTML = `
+            <span class="text-sm font-medium text-foreground min-w-[150px]">${key}:</span>
+            <span class="text-sm text-muted-foreground flex-1">${value || "(ריק)"}</span>
+          `;
+          dataList.appendChild(item);
+        });
+        
+        previewDataRef.current.appendChild(dataList);
+      } catch (error) {
+        console.error("Preview render error:", error);
+        if (containerRef.current) {
+          containerRef.current.innerHTML = `<p class="text-destructive">Failed to render preview</p>`;
+        }
       }
     };
-    doRender();
-  }, [wordFile, selectedRow]);
+
+    renderPreview();
+  }, [wordFile, selectedName, excelData, nameColumn]);
 
   return (
     <Card className="p-6 h-full">
-      <h3 className="text-lg font-semibold mb-4 text-foreground">Document Preview</h3>
-      {templateName && selectedName && selectedRow ? (
+      <h3 className="text-lg font-semibold mb-4 text-foreground">
+        Document Preview
+      </h3>
+      {templateName && selectedName ? (
         <div className="space-y-4">
           <div
             ref={containerRef}
-            className="p-4 bg-muted rounded-lg overflow-auto max-h-[600px]"
+            className="border rounded-lg overflow-auto max-h-[600px] bg-white p-4"
           />
           <div className="space-y-2">
             <div className="p-4 bg-muted rounded-lg">
@@ -89,34 +115,21 @@ export const DocumentPreview = ({
               <p className="text-sm text-muted-foreground">Selected Name</p>
               <p className="font-medium text-foreground">{selectedName}</p>
             </div>
-            <div className="p-4 border-2 border-border rounded-lg" dir="rtl">
+            <div className="p-4 border-2 border-border rounded-lg">
               <p className="text-sm font-semibold mb-3 text-foreground">
                 Data that will be filled:
               </p>
-              <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                {Object.entries(selectedRow).map(([key, value]) => (
-                  <div
-                    key={key}
-                    className="flex items-start gap-2 p-2 bg-muted rounded text-right"
-                  >
-                    <span className="text-sm font-medium text-foreground min-w-[150px]">
-                      {key}:
-                    </span>
-                    <span className="text-sm text-muted-foreground flex-1">
-                      {(value as string) || "(ריק)"}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <div
+                ref={previewDataRef}
+                className="max-h-[300px] overflow-y-auto"
+              />
             </div>
           </div>
         </div>
       ) : (
         <div className="flex items-center justify-center h-[400px] bg-muted rounded-lg">
           <p className="text-muted-foreground">
-            {!templateName || !selectedName
-              ? "Upload files and select a name to see preview"
-              : "Select a name to see data preview"}
+            Upload files and select a name to see preview
           </p>
         </div>
       )}
