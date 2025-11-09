@@ -1,26 +1,50 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FileUploader } from "@/components/FileUploader";
 import { NameSelector } from "@/components/NameSelector";
 import { DocumentPreview } from "@/components/DocumentPreview";
 import { ExportOptions } from "@/components/ExportOptions";
 import { FileText } from "lucide-react";
+import * as XLSX from "xlsx";
+import { toast } from "sonner";
 
 const Index = () => {
   const [excelFile, setExcelFile] = useState<File>();
   const [wordFile, setWordFile] = useState<File>();
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
+  const [names, setNames] = useState<string[]>([]);
 
-  // Mock data for demonstration
-  const mockNames = [
-    "John Smith",
-    "Sarah Johnson",
-    "Michael Brown",
-    "Emily Davis",
-    "David Wilson",
-    "Lisa Anderson",
-    "James Taylor",
-    "Jennifer Martinez",
-  ];
+  useEffect(() => {
+    if (excelFile) {
+      parseExcelFile(excelFile);
+    }
+  }, [excelFile]);
+
+  const parseExcelFile = async (file: File) => {
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: "array" });
+      
+      // Look for sheet named "database" or use first sheet
+      const sheetName = workbook.SheetNames.includes("database") 
+        ? "database" 
+        : workbook.SheetNames[0];
+      
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      
+      // Extract names from first column, skipping header
+      const extractedNames = jsonData
+        .slice(1)
+        .map((row: any) => row[0])
+        .filter((name: any) => name && String(name).trim() !== "");
+      
+      setNames(extractedNames);
+      toast.success(`Loaded ${extractedNames.length} names from Excel file`);
+    } catch (error) {
+      console.error("Error parsing Excel file:", error);
+      toast.error("Failed to parse Excel file");
+    }
+  };
 
   const handleNameSelection = (name: string, checked: boolean) => {
     if (checked) {
@@ -80,7 +104,7 @@ const Index = () => {
           <div className="grid lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1">
               <NameSelector
-                names={mockNames}
+                names={names}
                 selectedNames={selectedNames}
                 onSelectionChange={handleNameSelection}
               />
