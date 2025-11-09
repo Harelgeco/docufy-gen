@@ -45,8 +45,8 @@ const Index = () => {
         return;
       }
       
-      // Get headers
-      const headerRow = jsonData[0];
+      // Skip first 5 rows (project title info), row 6 (index 5) has headers
+      const headerRow = jsonData[5];
       const headers = headerRow.map((header: any) => String(header).trim());
       setExcelHeaders(headers);
       
@@ -60,8 +60,8 @@ const Index = () => {
         return;
       }
       
-      // Store all data rows as objects with header keys
-      const dataRows = jsonData.slice(1).map((row: any) => {
+      // Store all data rows starting from row 7 (index 6)
+      const dataRows = jsonData.slice(6).map((row: any) => {
         const rowData: any = {};
         headers.forEach((header: string, index: number) => {
           rowData[header] = row[index] ? String(row[index]) : "";
