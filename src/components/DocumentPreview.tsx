@@ -50,11 +50,9 @@ export const DocumentPreview = ({
       }
 
       try {
-        // Find the row data for this person
         const rowData = excelData.find((row) => row[nameColumn] === selectedName);
         if (!rowData) return;
 
-        // Read the Word template
         const data = await wordFile.arrayBuffer();
         const zip = new PizZip(data);
         const doc = new Docxtemplater(zip, {
@@ -63,17 +61,14 @@ export const DocumentPreview = ({
           delimiters: { start: "<<", end: ">>" },
         });
 
-        // Set the data
         doc.setData(buildTemplateData(rowData));
         doc.render();
 
-        // Generate the filled document
         const output = doc.getZip().generate({
           type: "blob",
           mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         });
 
-        // Clear and render the preview
         containerRef.current.innerHTML = "";
         await renderAsync(output, containerRef.current, undefined, {
           className: "docx-preview",
@@ -85,11 +80,14 @@ export const DocumentPreview = ({
           ignoreLastRenderedPageBreak: false,
           experimental: false,
           trimXmlDeclaration: true,
-          debug: false,
           useBase64URL: true,
+          renderHeaders: true,
+          renderFooters: true,
+          renderFootnotes: true,
+          renderEndnotes: true,
+          debug: false,
         });
 
-        // Show the data being filled
         previewDataRef.current.innerHTML = "";
         const dataList = document.createElement("div");
         dataList.className = "space-y-2";
