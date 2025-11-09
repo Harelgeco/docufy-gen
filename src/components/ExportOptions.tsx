@@ -16,19 +16,23 @@ interface ExportOptionsProps {
   nameColumn?: string;
 }
 
-// Build a robust mapping for template: include original headers and simplified keys
+// Build a robust mapping for template: include original headers and normalized keys
 const buildTemplateData = (row: Record<string, string>) => {
-  const mapped: Record<string, string> = {};
-  for (const [key, value] of Object.entries(row)) {
-    // original
-    mapped[key] = value ?? "";
-    // simplified: remove anything in parentheses, collapse whitespace
-    const simplified = key
-      .replace(/\(.+?\)/g, "")
-      .replace(/<[^>]*>/g, "")
+  const normalize = (s: string) =>
+    (s ?? "")
+      .replace(/\u00A0/g, " ")
+      .replace(/<br\s*\/?\>/gi, " ")
+      .replace(/\r?\n|\r|\t/g, " ")
       .replace(/\s+/g, " ")
       .trim();
-    if (simplified && !(simplified in mapped)) mapped[simplified] = value ?? "";
+  const mapped: Record<string, string> = {};
+  for (const [key, value] of Object.entries(row)) {
+    const v = value ?? "";
+    // original header key
+    mapped[key] = v;
+    // simplified header (no parentheses, tags, line breaks, extra spaces)
+    const simplified = normalize(key.replace(/\(.+?\)/g, "").replace(/<[^>]*>/g, ""));
+    if (simplified && !(simplified in mapped)) mapped[simplified] = v;
   }
   return mapped;
 };
@@ -41,6 +45,30 @@ export const ExportOptions = ({
   selectedNames,
   nameColumn,
 }: ExportOptionsProps) => {
+  const inlineImages = async (root: HTMLElement) => {
+    const imgs = Array.from(root.querySelectorAll('img')) as HTMLImageElement[];
+    await Promise.all(
+      imgs.map(async (img) => {
+        const src = img.getAttribute('src') || '';
+        if (!src || src.startsWith('data:')) return;
+        try {
+          const res = await fetch(src);
+          const blob = await res.blob();
+          const reader = new FileReader();
+          const dataUrl: string = await new Promise((resolve) => {
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          });
+          img.setAttribute('src', dataUrl);
+          img.setAttribute('crossorigin', 'anonymous');
+        } catch (e) {
+          console.warn('Failed to inline image', src, e);
+          // If we fail, remove the image to avoid tainting the canvas
+          img.remove();
+        }
+      })
+    );
+  };
   const generatePDFs = async () => {
     if (!wordFile || !excelData || !selectedNames || !nameColumn) {
       toast.error("Missing required data");
@@ -92,11 +120,15 @@ export const ExportOptions = ({
         tempContainer.style.width = "794px"; // ~A4 width @ 96dpi
         tempContainer.style.background = "white";
         tempContainer.style.zIndex = "9999";
+        tempContainer.style.height = "auto";
         document.body.appendChild(tempContainer);
 
         await renderAsync(outputBlob, tempContainer);
-        // Small delay to ensure layout fully applied
-        await new Promise((r) => setTimeout(r, 100));
+        // Ensure layout and fonts are ready
+        await new Promise((r) => setTimeout(r, 300));
+
+        const target = (tempContainer.querySelector('.docx') as HTMLElement) || tempContainer;
+        await inlineImages(target);
 
         const fileName = `${name.replace(/[^a-zA-Z0-9\u0590-\u05FF]/g, "_")}.pdf`;
 
@@ -105,10 +137,10 @@ export const ExportOptions = ({
             margin: 10,
             filename: fileName,
             image: { type: "jpeg", quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+            html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff", allowTaint: true },
             jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
           })
-          .from(tempContainer)
+          .from(target)
           .save();
 
         document.body.removeChild(tempContainer);
