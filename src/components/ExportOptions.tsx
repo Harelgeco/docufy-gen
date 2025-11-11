@@ -109,7 +109,7 @@ export const ExportOptions = ({
           // Ensure layout settled
           await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-          // Wait images
+          // Wait for all images (including template images)
           const imgs = Array.from(container.querySelectorAll("img")) as HTMLImageElement[];
           await Promise.all(
             imgs.map(
@@ -117,11 +117,17 @@ export const ExportOptions = ({
                 new Promise<void>((resolve) => {
                   if (img.complete && img.naturalWidth > 0) return resolve();
                   img.onload = () => resolve();
-                  img.onerror = () => resolve();
-                  setTimeout(() => resolve(), 10000);
+                  img.onerror = () => {
+                    console.warn("Image failed to load:", img.src);
+                    resolve();
+                  };
+                  setTimeout(() => resolve(), 15000);
                 })
             )
           );
+          
+          // Extra settling time for complex layouts
+          await new Promise((r) => setTimeout(r, 500));
 
           const fileName = `${name.replace(/[^a-zA-Z0-9\u0590-\u05FF]/g, "_")}.pdf`;
 
@@ -129,8 +135,16 @@ export const ExportOptions = ({
             .set({
               margin: 0,
               filename: fileName,
-              image: { type: "jpeg", quality: 0.98 },
-              html2canvas: { scale: 2, useCORS: true, allowTaint: true, backgroundColor: "#ffffff" },
+              image: { type: "jpeg", quality: 1.0 },
+              html2canvas: { 
+                scale: 2, 
+                useCORS: true, 
+                allowTaint: true, 
+                backgroundColor: "#ffffff",
+                logging: false,
+                imageTimeout: 15000,
+                removeContainer: false
+              },
               jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
             })
             .from(container)
