@@ -5,7 +5,8 @@ import { toast } from "sonner";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import { renderAsync } from "docx-preview";
-import html2pdf from "html2pdf.js";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 interface ExportOptionsProps {
   disabled?: boolean;
@@ -135,31 +136,58 @@ export const ExportOptions = ({
 
           const fileName = `${name.replace(/[^a-zA-Z0-9\u0590-\u05FF]/g, "_")}.pdf`;
 
-          const width = source.scrollWidth || source.clientWidth || 794;
-          const height = source.scrollHeight || source.clientHeight || 1123;
+          const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
 
-          await (html2pdf as any)()
-            .set({
-              margin: 0,
-              filename: fileName,
-              image: { type: "jpeg", quality: 1.0 },
-              html2canvas: { 
-                scale: 2,
-                useCORS: true,
-                allowTaint: true,
-                backgroundColor: "#ffffff",
-                logging: false,
-                imageTimeout: 20000,
-                removeContainer: false,
-                windowWidth: width,
-                windowHeight: height,
-                scrollX: 0,
-                scrollY: 0,
-              },
-              jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-            })
-            .from(source)
-            .save();
+          const pages = Array.from(source.querySelectorAll(".docx-page")) as HTMLElement[];
+          const targets = pages.length ? pages : [source];
+
+          const pxToMm = (px: number) => (px * 25.4) / 96;
+          const pageWidthMm = 210;
+          const pageHeightMm = 297;
+
+          for (let i = 0; i < targets.length; i++) {
+            const pageEl = targets[i];
+            const rect = pageEl.getBoundingClientRect();
+            const cssWidth = rect.width || pageEl.scrollWidth || pageEl.clientWidth;
+            const cssHeight = rect.height || pageEl.scrollHeight || pageEl.clientHeight;
+
+            if (cssWidth === 0 || cssHeight === 0) {
+              console.error("Zero-size page capture", { cssWidth, cssHeight, i });
+              throw new Error("Rendered page has zero size; cannot export.");
+            }
+
+            const canvas = await html2canvas(pageEl, {
+              scale: 2,
+              useCORS: true,
+              allowTaint: true,
+              backgroundColor: "#ffffff",
+              imageTimeout: 20000,
+              logging: false,
+              scrollX: 0,
+              scrollY: 0,
+            });
+
+            if (canvas.width === 0 || canvas.height === 0) {
+              console.error("html2canvas produced zero-size canvas", { i });
+              throw new Error("Canvas render failed; got zero-size canvas.");
+            }
+
+            const imgWmm = pxToMm(cssWidth);
+            const imgHmm = pxToMm(cssHeight);
+            const ratio = Math.min(pageWidthMm / imgWmm, pageHeightMm / imgHmm);
+            const renderW = imgWmm * ratio;
+            const renderH = imgHmm * ratio;
+            const offsetX = (pageWidthMm - renderW) / 2;
+            const offsetY = (pageHeightMm - renderH) / 2;
+
+            const imgData = canvas.toDataURL("image/jpeg", 1.0);
+
+            if (i > 0) pdf.addPage();
+
+            pdf.addImage(imgData, "JPEG", offsetX, offsetY, renderW, renderH);
+          }
+
+          pdf.save(fileName);
 
           document.body.removeChild(container);
           successCount++;
