@@ -29,6 +29,17 @@ const normalizeKey = (s: string) =>
 
 const buildTemplateData = (row: Record<string, string>) => {
   const mapped: Record<string, string> = {};
+  
+  // Add current date
+  const currentDate = new Date().toLocaleDateString('he-IL', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  mapped['date'] = currentDate;
+  mapped['Date'] = currentDate;
+  mapped['DATE'] = currentDate;
+  
   for (const [key, value] of Object.entries(row)) {
     const v = value ?? "";
     mapped[key] = v;
