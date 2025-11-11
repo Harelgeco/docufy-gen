@@ -82,7 +82,7 @@ export const ExportOptions = ({
 
           // Render into a visible container to ensure full layout (docx-preview preserves shapes/lines)
           const container = document.createElement("div");
-          container.style.cssText = `position: absolute; left: -10000px; top: 0; width: 794px; min-height: 1123px; background: white; padding: 0; z-index: 0; pointer-events: none;`;
+          container.style.cssText = `position: fixed; left: 0; top: 0; width: 794px; min-height: 1123px; background: white; padding: 0; opacity: 0.01; pointer-events: none; z-index: 2147483647; transform: translateZ(0);`;
           document.body.appendChild(container);
 
           // Wait fonts
@@ -109,8 +109,11 @@ export const ExportOptions = ({
           // Ensure layout settled
           await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 
+          // Resolve the element to render (wrapper created by docx-preview)
+          const source = (container.querySelector(".docx-wrapper") as HTMLElement) || container;
+
           // Wait for all images (including template images)
-          const imgs = Array.from(container.querySelectorAll("img")) as HTMLImageElement[];
+          const imgs = Array.from(source.querySelectorAll("img")) as HTMLImageElement[];
           await Promise.all(
             imgs.map(
               (img) =>
@@ -121,15 +124,19 @@ export const ExportOptions = ({
                     console.warn("Image failed to load:", img.src);
                     resolve();
                   };
-                  setTimeout(() => resolve(), 15000);
+                  setTimeout(() => resolve(), 20000);
                 })
             )
           );
-          
+
           // Extra settling time for complex layouts
           await new Promise((r) => setTimeout(r, 500));
 
+
           const fileName = `${name.replace(/[^a-zA-Z0-9\u0590-\u05FF]/g, "_")}.pdf`;
+
+          const width = source.scrollWidth || source.clientWidth || 794;
+          const height = source.scrollHeight || source.clientHeight || 1123;
 
           await (html2pdf as any)()
             .set({
@@ -137,17 +144,21 @@ export const ExportOptions = ({
               filename: fileName,
               image: { type: "jpeg", quality: 1.0 },
               html2canvas: { 
-                scale: 2, 
-                useCORS: true, 
-                allowTaint: true, 
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
                 backgroundColor: "#ffffff",
                 logging: false,
-                imageTimeout: 15000,
-                removeContainer: false
+                imageTimeout: 20000,
+                removeContainer: false,
+                windowWidth: width,
+                windowHeight: height,
+                scrollX: 0,
+                scrollY: 0,
               },
               jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
             })
-            .from(container)
+            .from(source)
             .save();
 
           document.body.removeChild(container);
