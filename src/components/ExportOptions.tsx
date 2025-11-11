@@ -120,7 +120,7 @@ export const ExportOptions = ({
             continue;
           }
 
-          // Fill the template
+          // Fill the template - SAME AS WORD EXPORT
           const zip = new PizZip(templateData);
           const doc = new Docxtemplater(zip, {
             paragraphLoop: true,
@@ -130,20 +130,32 @@ export const ExportOptions = ({
 
           doc.render(buildTemplateData(rowData));
 
-          // Generate filled DOCX blob
+          // Generate filled DOCX blob - SAME AS WORD EXPORT
           const outputBlob = doc.getZip().generate({
             type: "blob",
             mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
           });
 
-          // Render into container
-          const container = document.createElement("div");
-          container.style.cssText = `position: fixed; left: 0; top: 0; width: 794px; min-height: 1123px; background: white; padding: 0; opacity: 0.01; pointer-events: none; z-index: 2147483647; transform: translateZ(0);`;
-          document.body.appendChild(container);
+          // Create print container with proper RTL and Hebrew support
+          const printContainer = document.createElement("div");
+          printContainer.style.cssText = `
+            position: fixed; 
+            left: 0; 
+            top: 0; 
+            width: 210mm; 
+            background: white; 
+            padding: 0; 
+            z-index: 2147483647;
+            direction: rtl;
+            font-family: 'David Libre', 'Arial', 'Noto Sans Hebrew', sans-serif;
+          `;
+          document.body.appendChild(printContainer);
 
+          // Wait for fonts
           await document.fonts.ready.catch(() => {});
 
-          await renderAsync(outputBlob, container, undefined, {
+          // Render DOCX with all content preserved
+          await renderAsync(outputBlob, printContainer, undefined, {
             className: "docx-wrapper",
             inWrapper: true,
             ignoreWidth: false,
@@ -163,9 +175,14 @@ export const ExportOptions = ({
 
           await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-          const source = (container.querySelector(".docx-wrapper") as HTMLElement) || container;
+          const docxWrapper = printContainer.querySelector(".docx-wrapper") as HTMLElement;
+          if (docxWrapper) {
+            docxWrapper.style.direction = "rtl";
+            docxWrapper.style.textAlign = "right";
+          }
 
-          const imgs = Array.from(source.querySelectorAll("img")) as HTMLImageElement[];
+          // Wait for images
+          const imgs = Array.from(printContainer.querySelectorAll("img")) as HTMLImageElement[];
           await Promise.all(
             imgs.map(
               (img) =>
@@ -181,39 +198,42 @@ export const ExportOptions = ({
             )
           );
 
-          await new Promise((r) => setTimeout(r, 500));
+          await new Promise((r) => setTimeout(r, 1000));
 
           const fileName = `${name.replace(/[^a-zA-Z0-9\u0590-\u05FF]/g, "_")}.pdf`;
 
-          const width = source.scrollWidth || source.clientWidth || 794;
-          const height = source.scrollHeight || source.clientHeight || 1123;
-
+          // Use html2pdf with optimized settings for Hebrew/RTL
           await (html2pdf as any)()
             .set({
-              margin: 0,
+              margin: [10, 10, 10, 10],
               filename: fileName,
-              image: { type: "jpeg", quality: 1.0 },
+              image: { type: "jpeg", quality: 0.98 },
               html2canvas: { 
-                scale: 2,
+                scale: 3,
                 useCORS: true,
                 allowTaint: true,
                 backgroundColor: "#ffffff",
                 logging: false,
-                imageTimeout: 20000,
+                letterRendering: true,
+                imageTimeout: 30000,
                 removeContainer: false,
-                windowWidth: width,
-                windowHeight: height,
                 scrollX: 0,
                 scrollY: 0,
               },
-              jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+              jsPDF: { 
+                unit: "mm", 
+                format: "a4", 
+                orientation: "portrait",
+                compress: true,
+              },
+              pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
             })
-            .from(source)
+            .from(printContainer)
             .save();
 
-          document.body.removeChild(container);
+          document.body.removeChild(printContainer);
           successCount++;
-          await new Promise((r) => setTimeout(r, 300));
+          await new Promise((r) => setTimeout(r, 500));
         } catch (err) {
           console.error("PDF generation failed for", name, err);
           toast.error(`Failed to generate PDF for ${name}`);
