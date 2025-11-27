@@ -49,9 +49,10 @@ export class PDFGenerator {
       left: 0;
       width: 210mm;
       min-height: 297mm;
-      background: white;
-      padding: 0;
-      margin: 0;
+      background: white !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: none !important;
       box-sizing: border-box;
       z-index: 999999;
       opacity: 0;
@@ -61,6 +62,26 @@ export class PDFGenerator {
     
     this.container.id = "pdf-generation-container";
     document.body.appendChild(this.container);
+    
+    // Add global styles to remove all borders from docx content
+    const style = document.createElement("style");
+    style.textContent = `
+      #pdf-generation-container * {
+        border-top: none !important;
+        border-bottom: none !important;
+      }
+      #pdf-generation-container .docx-wrapper,
+      #pdf-generation-container .docx,
+      #pdf-generation-container section {
+        background: white !important;
+        border: none !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 20mm !important;
+      }
+    `;
+    document.head.appendChild(style);
+    this.container.dataset.styleId = style.id = "pdf-gen-styles";
     
     console.log("✅ Container created:", this.container);
   }
@@ -194,6 +215,13 @@ export class PDFGenerator {
   }
 
   private cleanup(): void {
+    // Remove styles
+    const styleElement = document.getElementById("pdf-gen-styles");
+    if (styleElement) {
+      styleElement.remove();
+    }
+    
+    // Remove container
     if (this.container && this.container.parentNode) {
       this.container.parentNode.removeChild(this.container);
       console.log("✅ Container removed");
