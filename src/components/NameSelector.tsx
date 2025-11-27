@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -11,6 +11,7 @@ interface NameSelectorProps {
   selectedNames: string[];
   onSelectionChange: (name: string, checked: boolean) => void;
   language: Language;
+  columnName: string;
 }
 
 export const NameSelector = ({
@@ -18,14 +19,10 @@ export const NameSelector = ({
   selectedNames,
   onSelectionChange,
   language,
+  columnName,
 }: NameSelectorProps) => {
   const t = translations[language];
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Reset search when names list changes
-  useEffect(() => {
-    setSearchQuery("");
-  }, [names]);
 
   const filteredNames = names.filter((name) =>
     name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -33,9 +30,12 @@ export const NameSelector = ({
 
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4 text-foreground">
+      <h3 className="text-lg font-semibold mb-2 text-foreground">
         {t.selectNames}
       </h3>
+      <p className="text-sm text-muted-foreground mb-4">
+        {language === "he" ? "עמודה נבחרת" : "Selected column"}: <span className="font-medium">{columnName}</span>
+      </p>
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
