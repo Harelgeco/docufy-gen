@@ -1,5 +1,6 @@
 import { Upload } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { translations, Language } from "@/lib/translations";
 
 interface FileUploaderProps {
   title: string;
@@ -7,6 +8,7 @@ interface FileUploaderProps {
   accept: string;
   onFileSelect: (file: File) => void;
   selectedFile?: File;
+  language: Language;
 }
 
 export const FileUploader = ({
@@ -15,7 +17,9 @@ export const FileUploader = ({
   accept,
   onFileSelect,
   selectedFile,
+  language,
 }: FileUploaderProps) => {
+  const t = translations[language];
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
@@ -49,12 +53,12 @@ export const FileUploader = ({
             className="hidden"
           />
           <div className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium">
-            {selectedFile ? selectedFile.name : "Choose File"}
+            {selectedFile ? selectedFile.name : t.chooseFile}
           </div>
         </label>
         {selectedFile && (
           <p className="text-xs text-muted-foreground">
-            File selected: {selectedFile.name}
+            {t.fileSelected} {selectedFile.name}
           </p>
         )}
       </div>

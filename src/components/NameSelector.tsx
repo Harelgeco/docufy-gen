@@ -4,18 +4,22 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { translations, Language } from "@/lib/translations";
 
 interface NameSelectorProps {
   names: string[];
   selectedNames: string[];
   onSelectionChange: (name: string, checked: boolean) => void;
+  language: Language;
 }
 
 export const NameSelector = ({
   names,
   selectedNames,
   onSelectionChange,
+  language,
 }: NameSelectorProps) => {
+  const t = translations[language];
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredNames = names.filter((name) =>
@@ -25,13 +29,13 @@ export const NameSelector = ({
   return (
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-4 text-foreground">
-        Select Names
+        {t.selectNames}
       </h3>
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           type="text"
-          placeholder="Search names..."
+          placeholder={t.searchNames}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-9"
