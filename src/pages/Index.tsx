@@ -28,8 +28,16 @@ const Index = () => {
   const [excelData, setExcelData] = useState<any[]>([]);
   const [wordPlaceholders, setWordPlaceholders] = useState<string[]>([]);
   const [selectedNameColumn, setSelectedNameColumn] = useState<string>("שם מלא רוכש 1");
-  const [language, setLanguage] = useState<Language>("he");
+  const [language, setLanguage] = useState<Language>(() => {
+    const saved = localStorage.getItem("preferred-language");
+    return (saved === "he" || saved === "en") ? saved : "he";
+  });
   const t = translations[language];
+
+  // Save language preference
+  useEffect(() => {
+    localStorage.setItem("preferred-language", language);
+  }, [language]);
 
   useEffect(() => {
     if (excelFile) {
