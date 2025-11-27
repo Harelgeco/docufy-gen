@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -21,6 +21,11 @@ export const NameSelector = ({
 }: NameSelectorProps) => {
   const t = translations[language];
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Reset search when names list changes
+  useEffect(() => {
+    setSearchQuery("");
+  }, [names]);
 
   const filteredNames = names.filter((name) =>
     name.toLowerCase().includes(searchQuery.toLowerCase())
