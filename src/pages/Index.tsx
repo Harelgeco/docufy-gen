@@ -261,10 +261,12 @@ const Index = () => {
           <div className="grid lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1">
               <NameSelector
+                key={selectedNameColumn}
                 names={names}
                 selectedNames={selectedNames}
                 onSelectionChange={handleNameSelection}
                 language={language}
+                columnName={selectedNameColumn}
               />
               <div className="mt-6">
                 <ExportOptions
