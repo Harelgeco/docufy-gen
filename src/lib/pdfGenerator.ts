@@ -73,28 +73,11 @@ export class PDFGenerator {
       ignoreWidth: false,
       ignoreHeight: false,
       ignoreFonts: false,
-      breakPages: false,
+      breakPages: true,
       useBase64URL: true,
       renderHeaders: true,
       renderFooters: true,
     });
-    
-    // הסרת רקע אפור ורווחים של wrapper בלבד, לא של התוכן
-    const styleOverride = document.createElement("style");
-    styleOverride.textContent = `
-      #pdf-generation-container .docx-wrapper {
-        background: transparent !important;
-        padding: 0 !important;
-        margin: 0 !important;
-      }
-      #pdf-generation-container section.docx {
-        box-shadow: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        background: white !important;
-      }
-    `;
-    this.container.appendChild(styleOverride);
     
     console.log("✅ DOCX rendered, container HTML length:", this.container.innerHTML.length);
     console.log("Container children:", this.container.children.length);
@@ -141,12 +124,6 @@ export class PDFGenerator {
   private async captureAndSavePDF(fileName: string): Promise<void> {
     if (!this.container) throw new Error("No container");
     
-    // חיפוש section.docx - התוכן האמיתי
-    const docxSection = this.container.querySelector("section.docx") as HTMLElement;
-    const captureElement = docxSection || this.container;
-    
-    console.log("Capturing element:", captureElement === docxSection ? "section.docx" : "container");
-    
     // Make visible for capture
     this.container.style.opacity = "1";
     await new Promise((r) => setTimeout(r, 100));
@@ -154,12 +131,16 @@ export class PDFGenerator {
     console.log("Starting canvas capture...");
     
     // Capture with html2canvas
-    const canvas = await html2canvas(captureElement, {
+    const canvas = await html2canvas(this.container, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
       backgroundColor: "#ffffff",
       logging: true,
+      width: this.container.scrollWidth,
+      height: this.container.scrollHeight,
+      windowWidth: this.container.scrollWidth,
+      windowHeight: this.container.scrollHeight,
     });
     
     console.log("✅ Canvas created:", canvas.width, "x", canvas.height);
@@ -180,7 +161,7 @@ export class PDFGenerator {
     const imgHeight = (canvas.height * pdfWidth) / canvas.width;
     
     const pdf = new jsPDF({
-      orientation: "portrait",
+      orientation: imgHeight > pdfHeight ? "portrait" : "portrait",
       unit: "mm",
       format: "a4",
     });
