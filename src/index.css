@@ -103,3 +103,17 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Override docx-preview gray background */
+.docx-wrapper {
+  background: white !important;
+  padding: 0 !important;
+}
+
+.docx-wrapper > section.docx {
+  box-shadow: none !important;
+  margin: 0 !important;
+  padding: 20mm !important;
+  width: 100% !important;
+  min-height: auto !important;
+}
