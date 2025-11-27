@@ -73,7 +73,6 @@ export class PDFGenerator {
       #pdf-generation-container section,
       #pdf-generation-container article,
       #pdf-generation-container div {
-        background: white !important;
         border: none !important;
         border-top: none !important;
         border-bottom: none !important;
@@ -82,13 +81,20 @@ export class PDFGenerator {
         box-shadow: none !important;
         outline: none !important;
       }
-      #pdf-generation-container .docx-wrapper section {
-        margin: 0 !important;
-        padding: 20mm !important;
-        page-break-after: avoid !important;
+      #pdf-generation-container {
+        background: white !important;
       }
-      #pdf-generation-container .docx-wrapper section:first-child {
-        padding-top: 20mm !important;
+      #pdf-generation-container .docx-wrapper {
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      #pdf-generation-container .docx-wrapper section {
+        background: white !important;
+        margin: 0 !important;
+        padding: 15mm 20mm !important;
+        page-break-after: avoid !important;
+        line-height: normal !important;
       }
     `;
     document.head.appendChild(style);
