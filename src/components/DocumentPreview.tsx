@@ -4,6 +4,7 @@ import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import { renderAsync } from "docx-preview";
 import { translations, Language } from "@/lib/translations";
+
 interface DocumentPreviewProps {
   templateName?: string;
   selectedName?: string;
@@ -12,7 +13,17 @@ interface DocumentPreviewProps {
   wordFile?: File;
   language: Language;
 }
-const normalizeKey = (s: string) => (s ?? "").replace(/\u00A0/g, " ").replace(/<br\s*\/?\>/gi, " ").replace(/\r?\n|\r|\t/g, " ").replace(/\(.+?\)/g, " ").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+
+const normalizeKey = (s: string) =>
+  (s ?? "")
+    .replace(/\u00A0/g, " ")
+    .replace(/<br\s*\/?\>/gi, " ")
+    .replace(/\r?\n|\r|\t/g, " ")
+    .replace(/\(.+?\)/g, " ")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
 const buildTemplateData = (row: Record<string, string>) => {
   const mapped: Record<string, string> = {};
   for (const [key, value] of Object.entries(row)) {
@@ -23,24 +34,27 @@ const buildTemplateData = (row: Record<string, string>) => {
   }
   return mapped;
 };
+
 export const DocumentPreview = ({
   templateName,
   selectedName,
   excelData,
   nameColumn,
   wordFile,
-  language
+  language,
 }: DocumentPreviewProps) => {
   const t = translations[language];
   const containerRef = useRef<HTMLDivElement>(null);
   const previewDataRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const renderPreview = async () => {
       if (!wordFile || !selectedName || !excelData || !nameColumn || !containerRef.current || !previewDataRef.current) {
         return;
       }
+
       try {
-        const rowData = excelData.find(row => row[nameColumn] === selectedName);
+        const rowData = excelData.find((row) => row[nameColumn] === selectedName);
         if (!rowData) return;
 
         // Read the Word template and fill placeholders
@@ -49,17 +63,15 @@ export const DocumentPreview = ({
         const doc = new Docxtemplater(zip, {
           paragraphLoop: true,
           linebreaks: true,
-          delimiters: {
-            start: "<<",
-            end: ">>"
-          }
+          delimiters: { start: "<<", end: ">>" },
         });
+
         doc.render(buildTemplateData(rowData));
 
         // Generate filled DOCX blob
         const outputBlob = doc.getZip().generate({
           type: "blob",
-          mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         });
 
         // Clear container and render with docx-preview to preserve formatting
@@ -79,17 +91,22 @@ export const DocumentPreview = ({
           renderFooters: true,
           renderFootnotes: true,
           renderEndnotes: true,
-          debug: false
+          debug: false,
         });
 
         // Ensure images are loaded
         const images = Array.from(containerRef.current.querySelectorAll("img")) as HTMLImageElement[];
-        await Promise.all(images.map(img => new Promise<void>(resolve => {
-          if (img.complete && img.naturalWidth > 0) return resolve();
-          img.onload = () => resolve();
-          img.onerror = () => resolve();
-          setTimeout(() => resolve(), 5000);
-        })));
+        await Promise.all(
+          images.map(
+            (img) =>
+              new Promise<void>((resolve) => {
+                if (img.complete && img.naturalWidth > 0) return resolve();
+                img.onload = () => resolve();
+                img.onerror = () => resolve();
+                setTimeout(() => resolve(), 5000);
+              })
+          )
+        );
 
         // Show data mapping list
         previewDataRef.current.innerHTML = "";
@@ -114,17 +131,20 @@ export const DocumentPreview = ({
         }
       }
     };
+
     renderPreview();
   }, [wordFile, selectedName, excelData, nameColumn]);
-  return <Card className="p-6 h-full">
+
+  return (
+    <Card className="p-6 h-full">
       <h3 className="text-lg font-semibold mb-4 text-foreground">{t.documentPreview}</h3>
-      {templateName && selectedName ? <div className="space-y-4">
-      <div ref={containerRef} style={{
-        width: "210mm",
-        minHeight: "297mm",
-        margin: "0 auto",
-        border: "1px solid #e5e7eb"
-      }} className="bg-white overflow-auto" />
+      {templateName && selectedName ? (
+        <div className="space-y-4">
+          <div
+            ref={containerRef}
+            className="border rounded-lg overflow-auto max-h-[600px] bg-white p-4"
+            style={{ minHeight: "400px" }}
+          />
           <div className="space-y-2">
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground">{t.template}</p>
@@ -139,8 +159,12 @@ export const DocumentPreview = ({
               <div ref={previewDataRef} className="max-h-[300px] overflow-y-auto" />
             </div>
           </div>
-        </div> : <div className="flex items-center justify-center h-[400px] bg-muted rounded-lg">
+        </div>
+      ) : (
+        <div className="flex items-center justify-center h-[400px] bg-muted rounded-lg">
           <p className="text-muted-foreground">{t.uploadToPreview}</p>
-        </div>}
-    </Card>;
+        </div>
+      )}
+    </Card>
+  );
 };
