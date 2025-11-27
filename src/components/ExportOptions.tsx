@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import { saveAs } from "file-saver";
-import mammoth from "mammoth";
+import { renderAsync } from "docx-preview";
 import html2pdf from "html2pdf.js";
 import { translations, Language } from "@/lib/translations";
 
@@ -150,36 +150,44 @@ export const ExportOptions = ({
             mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
           });
 
-          // Convert DOCX to HTML using mammoth for reliable conversion
-          const arrayBuffer = await outputBlob.arrayBuffer();
-          const result = await mammoth.convertToHtml({ arrayBuffer });
-          const htmlContent = result.value;
-
-          // Create container with proper RTL and Hebrew styling
+          // Create container for docx-preview rendering
           const printContainer = document.createElement("div");
           printContainer.style.cssText = `
-            position: absolute;
+            position: fixed;
             left: -9999px;
             top: 0;
             width: 210mm;
             background: white;
-            padding: 20mm;
-            direction: rtl;
-            font-family: 'Arial', 'Noto Sans Hebrew', sans-serif;
-            font-size: 12pt;
-            line-height: 1.6;
+            z-index: -1;
           `;
-          
-          // Apply RTL-friendly HTML content
-          printContainer.innerHTML = `
-            <div style="direction: rtl; text-align: right; font-family: 'Arial', 'Noto Sans Hebrew', sans-serif;">
-              ${htmlContent}
-            </div>
-          `;
-          
           document.body.appendChild(printContainer);
 
-          // Wait for fonts and rendering
+          // Render DOCX using docx-preview (same as preview component!)
+          await renderAsync(outputBlob, printContainer, undefined, {
+            className: "docx-wrapper",
+            inWrapper: true,
+            ignoreWidth: false,
+            ignoreHeight: false,
+            ignoreFonts: false,
+            breakPages: false,
+            useBase64URL: true,
+          });
+
+          // Wait for images to load
+          const images = Array.from(printContainer.querySelectorAll("img"));
+          await Promise.all(
+            images.map(
+              (img) =>
+                new Promise((resolve) => {
+                  if (img.complete) return resolve(true);
+                  img.onload = () => resolve(true);
+                  img.onerror = () => resolve(true);
+                  setTimeout(() => resolve(true), 3000);
+                })
+            )
+          );
+
+          // Wait for fonts and full render
           await document.fonts.ready.catch(() => {});
           await new Promise((r) => setTimeout(r, 500));
 
