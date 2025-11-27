@@ -15,6 +15,7 @@ interface ExportOptionsProps {
   excelData?: any[];
   selectedNames?: string[];
   nameColumn?: string;
+  language: "he" | "en";
 }
 
 const normalizeKey = (s: string) =>
@@ -27,11 +28,12 @@ const normalizeKey = (s: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
-const buildTemplateData = (row: Record<string, string>) => {
+const buildTemplateData = (row: Record<string, string>, language: "he" | "en") => {
   const mapped: Record<string, string> = {};
   
-  // Add current date as <<תאריך נוכחי>>
-  const currentDate = new Date().toLocaleDateString('he-IL', {
+  // Add current date as <<תאריך נוכחי>> with selected language
+  const locale = language === "he" ? "he-IL" : "en-US";
+  const currentDate = new Date().toLocaleDateString(locale, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit'
@@ -54,6 +56,7 @@ export const ExportOptions = ({
   excelData,
   selectedNames,
   nameColumn,
+  language,
 }: ExportOptionsProps) => {
   const generateDocuments = async () => {
     if (!wordFile || !excelData || !selectedNames || !nameColumn) {
@@ -82,7 +85,7 @@ export const ExportOptions = ({
             delimiters: { start: "<<", end: ">>" },
           });
 
-          doc.render(buildTemplateData(rowData));
+          doc.render(buildTemplateData(rowData, language));
 
           // Generate filled DOCX blob
           const outputBlob = doc.getZip().generate({
@@ -137,7 +140,7 @@ export const ExportOptions = ({
             delimiters: { start: "<<", end: ">>" },
           });
 
-          doc.render(buildTemplateData(rowData));
+          doc.render(buildTemplateData(rowData, language));
 
           // Generate filled DOCX blob - SAME AS WORD EXPORT
           const outputBlob = doc.getZip().generate({
