@@ -79,16 +79,27 @@ export class PDFGenerator {
       renderFooters: true,
     });
     
-    // הסרת רקע אפור וקווים מ-docx-preview
+    // הסרת כל הרווחים, רקעים וגבולות
     const styleOverride = document.createElement("style");
     styleOverride.textContent = `
-      #pdf-generation-container .docx-wrapper {
-        background: white !important;
+      #pdf-generation-container,
+      #pdf-generation-container *,
+      #pdf-generation-container .docx-wrapper,
+      #pdf-generation-container .docx-wrapper *,
+      #pdf-generation-container section,
+      #pdf-generation-container section * {
+        margin: 0 !important;
         padding: 0 !important;
-      }
-      #pdf-generation-container .docx-wrapper > section.docx {
+        border: none !important;
         box-shadow: none !important;
-        margin-bottom: 0 !important;
+        background: white !important;
+        background-color: white !important;
+      }
+      #pdf-generation-container .docx-wrapper {
+        display: block !important;
+      }
+      #pdf-generation-container section.docx {
+        page-break-after: avoid !important;
       }
     `;
     this.container.appendChild(styleOverride);
