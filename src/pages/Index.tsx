@@ -148,13 +148,25 @@ const Index = () => {
   const updateNamesFromColumn = (columnName: string) => {
     if (!excelData.length) return;
     
+    console.log("=== DEBUG updateNamesFromColumn ===");
+    console.log("Selected column:", columnName);
+    console.log("Available headers:", excelHeaders);
+    console.log("First row data:", excelData[0]);
+    
     const extractedNames = excelData
-      .map((row: any) => row[columnName])
+      .map((row: any) => {
+        const value = row[columnName];
+        console.log(`Row value for "${columnName}":`, value);
+        return value;
+      })
       .filter((name: string) => name && name.trim() !== "");
+    
+    console.log("Extracted names:", extractedNames.slice(0, 5));
     
     setNames(extractedNames);
     setSelectedNames([]);
-    toast.success(`Loaded ${extractedNames.length} names from '${columnName}'`);
+    
+    toast.success(`נטענו ${extractedNames.length} ערכים מעמודה "${columnName}"`);
   };
 
   const parseWordTemplate = async (file: File) => {
