@@ -66,18 +66,29 @@ export class PDFGenerator {
     // Add global styles to remove all borders from docx content
     const style = document.createElement("style");
     style.textContent = `
-      #pdf-generation-container * {
-        border-top: none !important;
-        border-bottom: none !important;
-      }
+      #pdf-generation-container,
+      #pdf-generation-container *,
       #pdf-generation-container .docx-wrapper,
       #pdf-generation-container .docx,
-      #pdf-generation-container section {
+      #pdf-generation-container section,
+      #pdf-generation-container article,
+      #pdf-generation-container div {
         background: white !important;
         border: none !important;
+        border-top: none !important;
+        border-bottom: none !important;
+        border-left: none !important;
+        border-right: none !important;
         box-shadow: none !important;
+        outline: none !important;
+      }
+      #pdf-generation-container .docx-wrapper section {
         margin: 0 !important;
         padding: 20mm !important;
+        page-break-after: avoid !important;
+      }
+      #pdf-generation-container .docx-wrapper section:first-child {
+        padding-top: 20mm !important;
       }
     `;
     document.head.appendChild(style);
@@ -95,10 +106,12 @@ export class PDFGenerator {
       ignoreWidth: false,
       ignoreHeight: false,
       ignoreFonts: false,
-      breakPages: true,
+      breakPages: false,
       useBase64URL: true,
       renderHeaders: true,
       renderFooters: true,
+      renderEndnotes: false,
+      renderFootnotes: false,
     });
     
     console.log("✅ DOCX rendered, container HTML length:", this.container.innerHTML.length);
