@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import { renderAsync } from "docx-preview";
+import { translations, Language } from "@/lib/translations";
 
 interface DocumentPreviewProps {
   templateName?: string;
@@ -10,6 +11,7 @@ interface DocumentPreviewProps {
   excelData?: any[];
   nameColumn?: string;
   wordFile?: File;
+  language: Language;
 }
 
 const normalizeKey = (s: string) =>
@@ -39,7 +41,9 @@ export const DocumentPreview = ({
   excelData,
   nameColumn,
   wordFile,
+  language,
 }: DocumentPreviewProps) => {
+  const t = translations[language];
   const containerRef = useRef<HTMLDivElement>(null);
   const previewDataRef = useRef<HTMLDivElement>(null);
 
@@ -112,9 +116,10 @@ export const DocumentPreview = ({
           const item = document.createElement("div");
           item.className = "flex items-start gap-2 p-2 bg-muted rounded text-right";
           item.dir = "rtl";
+          const emptyText = language === "he" ? "(ריק)" : "(empty)";
           item.innerHTML = `
             <span class="text-sm font-medium text-foreground min-w-[150px]">${key}:</span>
-            <span class="text-sm text-muted-foreground flex-1">${value || "(ריק)"}</span>
+            <span class="text-sm text-muted-foreground flex-1">${value || emptyText}</span>
           `;
           dataList.appendChild(item);
         });
@@ -132,7 +137,7 @@ export const DocumentPreview = ({
 
   return (
     <Card className="p-6 h-full">
-      <h3 className="text-lg font-semibold mb-4 text-foreground">Document Preview</h3>
+      <h3 className="text-lg font-semibold mb-4 text-foreground">{t.documentPreview}</h3>
       {templateName && selectedName ? (
         <div className="space-y-4">
           <div
@@ -142,22 +147,22 @@ export const DocumentPreview = ({
           />
           <div className="space-y-2">
             <div className="p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground">Template</p>
+              <p className="text-sm text-muted-foreground">{t.template}</p>
               <p className="font-medium text-foreground">{templateName}</p>
             </div>
             <div className="p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground">Selected Name</p>
+              <p className="text-sm text-muted-foreground">{t.selectedName}</p>
               <p className="font-medium text-foreground">{selectedName}</p>
             </div>
             <div className="p-4 border-2 border-border rounded-lg">
-              <p className="text-sm font-semibold mb-3 text-foreground">Data that will be filled:</p>
+              <p className="text-sm font-semibold mb-3 text-foreground">{t.dataToFill}</p>
               <div ref={previewDataRef} className="max-h-[300px] overflow-y-auto" />
             </div>
           </div>
         </div>
       ) : (
         <div className="flex items-center justify-center h-[400px] bg-muted rounded-lg">
-          <p className="text-muted-foreground">Upload files and select a name to see preview</p>
+          <p className="text-muted-foreground">{t.uploadToPreview}</p>
         </div>
       )}
     </Card>

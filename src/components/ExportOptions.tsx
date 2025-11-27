@@ -7,6 +7,7 @@ import PizZip from "pizzip";
 import { saveAs } from "file-saver";
 import { renderAsync } from "docx-preview";
 import html2pdf from "html2pdf.js";
+import { translations, Language } from "@/lib/translations";
 
 interface ExportOptionsProps {
   disabled?: boolean;
@@ -58,6 +59,7 @@ export const ExportOptions = ({
   nameColumn,
   language,
 }: ExportOptionsProps) => {
+  const t = translations[language];
   const generateDocuments = async () => {
     if (!wordFile || !excelData || !selectedNames || !nameColumn) {
       toast.error("Missing required data");
@@ -261,20 +263,20 @@ export const ExportOptions = ({
 
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4 text-foreground">Export Options</h3>
+      <h3 className="text-lg font-semibold mb-4 text-foreground">{t.exportOptions}</h3>
       <div className="space-y-3">
         <Button className="w-full justify-start" disabled={disabled} onClick={generateDocuments}>
           <FileText className="mr-2 h-4 w-4" />
-          Download as Word Document(s)
+          {t.downloadWord}
         </Button>
         <Button className="w-full justify-start" disabled={disabled} onClick={generatePDFs} variant="outline">
           <Download className="mr-2 h-4 w-4" />
-          Download as PDF(s)
+          {t.downloadPDF}
         </Button>
       </div>
       {selectedCount > 0 && (
         <p className="mt-4 text-sm text-center text-muted-foreground">
-          {selectedCount} document{selectedCount > 1 ? "s" : ""} selected
+          {selectedCount} {selectedCount > 1 ? t.documents : t.document} {t.documentsSelected}
         </p>
       )}
     </Card>

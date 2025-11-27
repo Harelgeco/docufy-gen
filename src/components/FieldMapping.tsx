@@ -7,16 +7,20 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { translations, Language } from "@/lib/translations";
 
 interface FieldMappingProps {
   excelHeaders: string[];
   wordPlaceholders: string[];
+  language: Language;
 }
 
 export const FieldMapping = ({
   excelHeaders,
   wordPlaceholders,
+  language,
 }: FieldMappingProps) => {
+  const t = translations[language];
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -25,7 +29,7 @@ export const FieldMapping = ({
         <CollapsibleTrigger className="w-full">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-foreground">
-              Field Mapping
+              {t.fieldMapping}
             </h3>
             <ChevronDown
               className={`h-5 w-5 transition-transform ${
@@ -38,7 +42,7 @@ export const FieldMapping = ({
           <div className="grid md:grid-cols-2 gap-6 mt-4">
         <div>
           <h4 className="text-sm font-medium mb-3 text-muted-foreground">
-            Excel Headers ({excelHeaders.length})
+            {t.excelHeaders} ({excelHeaders.length})
           </h4>
           <div className="space-y-2">
             {excelHeaders.map((header, index) => (
@@ -54,7 +58,7 @@ export const FieldMapping = ({
         </div>
         <div>
           <h4 className="text-sm font-medium mb-3 text-muted-foreground">
-            Word Placeholders ({wordPlaceholders.length})
+            {t.wordPlaceholders} ({wordPlaceholders.length})
           </h4>
           <div className="space-y-2">
             {wordPlaceholders.map((placeholder, index) => (

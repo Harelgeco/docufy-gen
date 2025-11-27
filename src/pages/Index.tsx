@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+import { translations, Language } from "@/lib/translations";
 
 const Index = () => {
   const [excelFile, setExcelFile] = useState<File>();
@@ -28,7 +28,8 @@ const Index = () => {
   const [excelData, setExcelData] = useState<any[]>([]);
   const [wordPlaceholders, setWordPlaceholders] = useState<string[]>([]);
   const [selectedNameColumn, setSelectedNameColumn] = useState<string>("שם מלא רוכש 1");
-  const [language, setLanguage] = useState<"he" | "en">("he");
+  const [language, setLanguage] = useState<Language>("he");
+  const t = translations[language];
 
   useEffect(() => {
     if (excelFile) {
@@ -177,18 +178,18 @@ const Index = () => {
             <div className="flex items-center space-x-3">
               <FileText className="w-8 h-8 text-primary" />
               <h1 className="text-2xl font-bold text-foreground">
-                Document Generator
+                {t.appTitle}
               </h1>
             </div>
             <div className="flex items-center gap-2">
               <Languages className="w-5 h-5 text-muted-foreground" />
-              <Select value={language} onValueChange={(val: "he" | "en") => setLanguage(val)}>
+              <Select value={language} onValueChange={(val: Language) => setLanguage(val)}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="he">עברית</SelectItem>
-                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="he">{t.hebrew}</SelectItem>
+                  <SelectItem value="en">{t.english}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -201,29 +202,30 @@ const Index = () => {
         {/* Hero Section */}
         <div className="text-center mb-12 max-w-3xl mx-auto">
           <h2 className="text-4xl font-bold mb-4 text-foreground">
-            Generate Custom Documents in Seconds
+            {t.heroTitle}
           </h2>
           <p className="text-lg text-muted-foreground">
-            Upload your Excel data and Word template, select names, and create
-            personalized PDF documents with ease.
+            {t.heroDescription}
           </p>
         </div>
 
         {/* File Upload Section */}
         <div className="grid md:grid-cols-2 gap-6 mb-12">
           <FileUploader
-            title="Upload Excel File"
-            description="Drag and drop or click to select your data file"
+            title={t.uploadExcel}
+            description={t.uploadExcelDesc}
             accept=".xlsx,.xls"
             onFileSelect={setExcelFile}
             selectedFile={excelFile}
+            language={language}
           />
           <FileUploader
-            title="Upload Word Template"
-            description="Drag and drop or click to select your template"
+            title={t.uploadWord}
+            description={t.uploadWordDesc}
             accept=".docx,.doc"
             onFileSelect={setWordFile}
             selectedFile={wordFile}
+            language={language}
           />
         </div>
 
@@ -233,6 +235,7 @@ const Index = () => {
             columns={excelHeaders}
             selectedColumn={selectedNameColumn}
             onColumnChange={setSelectedNameColumn}
+            language={language}
           />
         )}
 
@@ -241,6 +244,7 @@ const Index = () => {
           <FieldMapping
             excelHeaders={excelHeaders}
             wordPlaceholders={wordPlaceholders}
+            language={language}
           />
         )}
 
@@ -252,6 +256,7 @@ const Index = () => {
                 names={names}
                 selectedNames={selectedNames}
                 onSelectionChange={handleNameSelection}
+                language={language}
               />
               <div className="mt-6">
                 <ExportOptions
@@ -272,6 +277,7 @@ const Index = () => {
                 excelData={excelData}
                 nameColumn={selectedNameColumn}
                 wordFile={wordFile}
+                language={language}
               />
             </div>
           </div>
