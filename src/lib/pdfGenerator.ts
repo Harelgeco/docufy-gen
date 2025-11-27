@@ -50,7 +50,8 @@ export class PDFGenerator {
       width: 210mm;
       min-height: 297mm;
       background: white;
-      padding: 20mm;
+      padding: 0;
+      margin: 0;
       box-sizing: border-box;
       z-index: 999999;
       opacity: 0;
@@ -136,11 +137,12 @@ export class PDFGenerator {
       useCORS: true,
       allowTaint: true,
       backgroundColor: "#ffffff",
-      logging: true,
+      logging: false,
       width: this.container.scrollWidth,
       height: this.container.scrollHeight,
       windowWidth: this.container.scrollWidth,
       windowHeight: this.container.scrollHeight,
+      removeContainer: false,
     });
     
     console.log("✅ Canvas created:", canvas.width, "x", canvas.height);
@@ -169,16 +171,21 @@ export class PDFGenerator {
     let heightLeft = imgHeight;
     let position = 0;
     
-    // Add first page
-    pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-    heightLeft -= pdfHeight;
-    
-    // Add additional pages if needed
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
+    // Add image without margins
+    if (imgHeight <= pdfHeight) {
+      // Single page - center it
+      pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
+    } else {
+      // Multiple pages
       pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
       heightLeft -= pdfHeight;
+      
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
+      }
     }
     
     console.log("✅ PDF created, saving...");
