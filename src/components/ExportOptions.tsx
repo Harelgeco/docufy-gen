@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import { saveAs } from "file-saver";
-import { renderAsync } from "docx-preview";
+import mammoth from "mammoth";
 import html2pdf from "html2pdf.js";
 import { translations, Language } from "@/lib/translations";
 
@@ -144,103 +144,66 @@ export const ExportOptions = ({
 
           doc.render(buildTemplateData(rowData, language));
 
-          // Generate filled DOCX blob - SAME AS WORD EXPORT
+          // Generate filled DOCX blob
           const outputBlob = doc.getZip().generate({
             type: "blob",
             mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
           });
 
-          // Create print container with proper RTL and Hebrew support
+          // Convert DOCX to HTML using mammoth for reliable conversion
+          const arrayBuffer = await outputBlob.arrayBuffer();
+          const result = await mammoth.convertToHtml({ arrayBuffer });
+          const htmlContent = result.value;
+
+          // Create container with proper RTL and Hebrew styling
           const printContainer = document.createElement("div");
           printContainer.style.cssText = `
-            position: fixed; 
-            left: 0; 
-            top: 0; 
-            width: 210mm; 
-            background: white; 
-            padding: 0; 
-            z-index: 2147483647;
+            position: absolute;
+            left: -9999px;
+            top: 0;
+            width: 210mm;
+            background: white;
+            padding: 20mm;
             direction: rtl;
-            font-family: 'David Libre', 'Arial', 'Noto Sans Hebrew', sans-serif;
+            font-family: 'Arial', 'Noto Sans Hebrew', sans-serif;
+            font-size: 12pt;
+            line-height: 1.6;
           `;
+          
+          // Apply RTL-friendly HTML content
+          printContainer.innerHTML = `
+            <div style="direction: rtl; text-align: right; font-family: 'Arial', 'Noto Sans Hebrew', sans-serif;">
+              ${htmlContent}
+            </div>
+          `;
+          
           document.body.appendChild(printContainer);
 
-          // Wait for fonts
+          // Wait for fonts and rendering
           await document.fonts.ready.catch(() => {});
-
-          // Render DOCX with all content preserved
-          await renderAsync(outputBlob, printContainer, undefined, {
-            className: "docx-wrapper",
-            inWrapper: true,
-            ignoreWidth: false,
-            ignoreHeight: false,
-            ignoreFonts: false,
-            breakPages: true,
-            ignoreLastRenderedPageBreak: false,
-            experimental: false,
-            trimXmlDeclaration: true,
-            useBase64URL: true,
-            renderHeaders: true,
-            renderFooters: true,
-            renderFootnotes: true,
-            renderEndnotes: true,
-            debug: false,
-          });
-
-          await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-
-          const docxWrapper = printContainer.querySelector(".docx-wrapper") as HTMLElement;
-          if (docxWrapper) {
-            docxWrapper.style.direction = "rtl";
-            docxWrapper.style.textAlign = "right";
-          }
-
-          // Wait for images
-          const imgs = Array.from(printContainer.querySelectorAll("img")) as HTMLImageElement[];
-          await Promise.all(
-            imgs.map(
-              (img) =>
-                new Promise<void>((resolve) => {
-                  if (img.complete && img.naturalWidth > 0) return resolve();
-                  img.onload = () => resolve();
-                  img.onerror = () => {
-                    console.warn("Image failed to load:", img.src);
-                    resolve();
-                  };
-                  setTimeout(() => resolve(), 20000);
-                })
-            )
-          );
-
-          await new Promise((r) => setTimeout(r, 1000));
+          await new Promise((r) => setTimeout(r, 500));
 
           const fileName = `${name.replace(/[^a-zA-Z0-9\u0590-\u05FF]/g, "_")}.pdf`;
 
-          // Use html2pdf with optimized settings for Hebrew/RTL
+          // Generate PDF with optimized settings for Hebrew/RTL
           await (html2pdf as any)()
             .set({
-              margin: [10, 10, 10, 10],
+              margin: [15, 15, 15, 15],
               filename: fileName,
-              image: { type: "jpeg", quality: 0.98 },
+              image: { type: "jpeg", quality: 0.95 },
               html2canvas: { 
-                scale: 3,
+                scale: 2,
                 useCORS: true,
                 allowTaint: true,
                 backgroundColor: "#ffffff",
-                logging: false,
                 letterRendering: true,
-                imageTimeout: 30000,
-                removeContainer: false,
-                scrollX: 0,
-                scrollY: 0,
+                windowWidth: 793.7, // A4 width in pixels at 96 DPI
               },
               jsPDF: { 
                 unit: "mm", 
                 format: "a4", 
                 orientation: "portrait",
-                compress: true,
               },
-              pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
             })
             .from(printContainer)
             .save();
