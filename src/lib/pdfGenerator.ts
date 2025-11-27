@@ -49,10 +49,8 @@ export class PDFGenerator {
       left: 0;
       width: 210mm;
       min-height: 297mm;
-      background: white !important;
-      padding: 0 !important;
-      margin: 0 !important;
-      border: none !important;
+      background: white;
+      padding: 20mm;
       box-sizing: border-box;
       z-index: 999999;
       opacity: 0;
@@ -62,43 +60,6 @@ export class PDFGenerator {
     
     this.container.id = "pdf-generation-container";
     document.body.appendChild(this.container);
-    
-    // Add global styles to remove all borders from docx content
-    const style = document.createElement("style");
-    style.textContent = `
-      #pdf-generation-container,
-      #pdf-generation-container *,
-      #pdf-generation-container .docx-wrapper,
-      #pdf-generation-container .docx,
-      #pdf-generation-container section,
-      #pdf-generation-container article,
-      #pdf-generation-container div {
-        border: none !important;
-        border-top: none !important;
-        border-bottom: none !important;
-        border-left: none !important;
-        border-right: none !important;
-        box-shadow: none !important;
-        outline: none !important;
-      }
-      #pdf-generation-container {
-        background: white !important;
-      }
-      #pdf-generation-container .docx-wrapper {
-        background: white !important;
-        padding: 0 !important;
-        margin: 0 !important;
-      }
-      #pdf-generation-container .docx-wrapper section {
-        background: white !important;
-        margin: 0 !important;
-        padding: 15mm 20mm !important;
-        page-break-after: avoid !important;
-        line-height: normal !important;
-      }
-    `;
-    document.head.appendChild(style);
-    this.container.dataset.styleId = style.id = "pdf-gen-styles";
     
     console.log("✅ Container created:", this.container);
   }
@@ -112,12 +73,10 @@ export class PDFGenerator {
       ignoreWidth: false,
       ignoreHeight: false,
       ignoreFonts: false,
-      breakPages: false,
+      breakPages: true,
       useBase64URL: true,
       renderHeaders: true,
       renderFooters: true,
-      renderEndnotes: false,
-      renderFootnotes: false,
     });
     
     console.log("✅ DOCX rendered, container HTML length:", this.container.innerHTML.length);
@@ -177,12 +136,11 @@ export class PDFGenerator {
       useCORS: true,
       allowTaint: true,
       backgroundColor: "#ffffff",
-      logging: false,
+      logging: true,
       width: this.container.scrollWidth,
       height: this.container.scrollHeight,
       windowWidth: this.container.scrollWidth,
       windowHeight: this.container.scrollHeight,
-      removeContainer: false,
     });
     
     console.log("✅ Canvas created:", canvas.width, "x", canvas.height);
@@ -211,21 +169,16 @@ export class PDFGenerator {
     let heightLeft = imgHeight;
     let position = 0;
     
-    // Add image without margins
-    if (imgHeight <= pdfHeight) {
-      // Single page - center it
-      pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
-    } else {
-      // Multiple pages
+    // Add first page
+    pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+    heightLeft -= pdfHeight;
+    
+    // Add additional pages if needed
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
       pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
       heightLeft -= pdfHeight;
-      
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
-      }
     }
     
     console.log("✅ PDF created, saving...");
@@ -234,13 +187,6 @@ export class PDFGenerator {
   }
 
   private cleanup(): void {
-    // Remove styles
-    const styleElement = document.getElementById("pdf-gen-styles");
-    if (styleElement) {
-      styleElement.remove();
-    }
-    
-    // Remove container
     if (this.container && this.container.parentNode) {
       this.container.parentNode.removeChild(this.container);
       console.log("✅ Container removed");
