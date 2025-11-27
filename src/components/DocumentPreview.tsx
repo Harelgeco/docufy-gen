@@ -119,12 +119,12 @@ export const DocumentPreview = ({
   return <Card className="p-6 h-full">
       <h3 className="text-lg font-semibold mb-4 text-foreground">{t.documentPreview}</h3>
       {templateName && selectedName ? <div className="space-y-4">
-          <div ref={containerRef} style={{
+      <div ref={containerRef} style={{
         width: "210mm",
         minHeight: "297mm",
         margin: "0 auto",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
-      }} className="bg-white p-4 overflow-auto" />
+        border: "1px solid #e5e7eb"
+      }} className="bg-white overflow-auto" />
           <div className="space-y-2">
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground">{t.template}</p>
