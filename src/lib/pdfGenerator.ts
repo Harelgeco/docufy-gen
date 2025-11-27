@@ -50,7 +50,7 @@ export class PDFGenerator {
       width: 210mm;
       min-height: 297mm;
       background: white;
-      padding: 0;
+      padding: 20mm;
       box-sizing: border-box;
       z-index: 999999;
       opacity: 0;
@@ -79,27 +79,19 @@ export class PDFGenerator {
       renderFooters: true,
     });
     
-    // הסרת כל הרווחים, רקעים וגבולות
+    // הסרת רקע אפור ורווחים של wrapper בלבד, לא של התוכן
     const styleOverride = document.createElement("style");
     styleOverride.textContent = `
-      #pdf-generation-container,
-      #pdf-generation-container *,
-      #pdf-generation-container .docx-wrapper,
-      #pdf-generation-container .docx-wrapper *,
-      #pdf-generation-container section,
-      #pdf-generation-container section * {
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
-        background: white !important;
-        background-color: white !important;
-      }
       #pdf-generation-container .docx-wrapper {
-        display: block !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
       }
       #pdf-generation-container section.docx {
-        page-break-after: avoid !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
       }
     `;
     this.container.appendChild(styleOverride);
@@ -149,6 +141,12 @@ export class PDFGenerator {
   private async captureAndSavePDF(fileName: string): Promise<void> {
     if (!this.container) throw new Error("No container");
     
+    // חיפוש section.docx - התוכן האמיתי
+    const docxSection = this.container.querySelector("section.docx") as HTMLElement;
+    const captureElement = docxSection || this.container;
+    
+    console.log("Capturing element:", captureElement === docxSection ? "section.docx" : "container");
+    
     // Make visible for capture
     this.container.style.opacity = "1";
     await new Promise((r) => setTimeout(r, 100));
@@ -156,16 +154,12 @@ export class PDFGenerator {
     console.log("Starting canvas capture...");
     
     // Capture with html2canvas
-    const canvas = await html2canvas(this.container, {
+    const canvas = await html2canvas(captureElement, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
       backgroundColor: "#ffffff",
       logging: true,
-      width: this.container.scrollWidth,
-      height: this.container.scrollHeight,
-      windowWidth: this.container.scrollWidth,
-      windowHeight: this.container.scrollHeight,
     });
     
     console.log("✅ Canvas created:", canvas.width, "x", canvas.height);
@@ -186,7 +180,7 @@ export class PDFGenerator {
     const imgHeight = (canvas.height * pdfWidth) / canvas.width;
     
     const pdf = new jsPDF({
-      orientation: imgHeight > pdfHeight ? "portrait" : "portrait",
+      orientation: "portrait",
       unit: "mm",
       format: "a4",
     });
