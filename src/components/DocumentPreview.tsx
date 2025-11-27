@@ -142,7 +142,7 @@ export const DocumentPreview = ({
         <div className="space-y-4">
           <div
             ref={containerRef}
-            className="border rounded-lg overflow-auto max-h-[600px] bg-white p-4"
+            className="border rounded-lg overflow-auto max-h-[600px] p-4"
             style={{ minHeight: "400px" }}
           />
           <div className="space-y-2">
