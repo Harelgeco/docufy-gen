@@ -31,16 +31,16 @@ export const NameSelector = ({
   return (
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-2 text-foreground">
-        {t.selectNames}
+        {language === "he" ? "בחר ערכים" : "Select Values"}
       </h3>
       <p className="text-sm text-muted-foreground mb-4">
-        {language === "he" ? "עמודה נבחרת" : "Selected column"}: <span className="font-medium">{columnName}</span>
+        {language === "he" ? "עמודה" : "Column"}: <span className="font-medium">{columnName}</span>
       </p>
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           type="text"
-          placeholder={t.searchNames}
+          placeholder={language === "he" ? "חפש..." : "Search..."}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-9"
