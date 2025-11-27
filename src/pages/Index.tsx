@@ -74,16 +74,26 @@ const Index = () => {
       // Skip first 5 rows (project title info), row 6 (index 5) has headers
       const headerRow = jsonData[5] || jsonData[0];
 
-      // Normalize header text: remove line breaks, <br>, extra spaces, NBSP
-      const normalize = (val: any) =>
-        String(val ?? "")
+      // Normalize header text: preserve structure but clean up
+      const normalize = (val: any) => {
+        const str = String(val ?? "");
+        // Replace NBSP and various whitespace characters with regular space
+        return str
           .replace(/\u00A0/g, " ")
-          .replace(/<br\s*\/?\>/gi, " ")
-          .replace(/\r?\n|\r|\t/g, " ")
+          .replace(/<br\s*\/?>/gi, " ")
+          .replace(/[\r\n\t]+/g, " ")
           .replace(/\s+/g, " ")
           .trim();
+      };
       
-      const rawHeaders: string[] = (headerRow || []).map((h: any) => normalize(h));
+      const rawHeaders: string[] = (headerRow || []).map((h: any) => {
+        const normalized = normalize(h);
+        // Log headers for debugging
+        if (normalized) {
+          console.log(`Header: "${normalized}"`);
+        }
+        return normalized;
+      });
 
       // Handle duplicate headers by adding suffixes
       const headers: string[] = [];
@@ -105,10 +115,16 @@ const Index = () => {
       const startIndex = jsonData[5] ? 6 : 1;
 
       // Store all data rows starting from data start
-      const dataRows = jsonData.slice(startIndex).map((row: any) => {
+      const dataRows = jsonData.slice(startIndex).map((row: any, rowIndex: number) => {
         const rowData: any = {};
         headers.forEach((header: string, index: number) => {
-          rowData[header] = normalize(row[index]);
+          const cellValue = normalize(row[index]);
+          rowData[header] = cellValue;
+          
+          // Debug log for first few rows to verify data mapping
+          if (rowIndex < 3) {
+            console.log(`Row ${rowIndex + 1}, "${header}": "${cellValue}"`);
+          }
         });
         return rowData;
       });
