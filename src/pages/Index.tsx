@@ -5,11 +5,19 @@ import { DocumentPreview } from "@/components/DocumentPreview";
 import { ExportOptions } from "@/components/ExportOptions";
 import { FieldMapping } from "@/components/FieldMapping";
 import { ColumnSelector } from "@/components/ColumnSelector";
-import { FileText } from "lucide-react";
+import { FileText, Languages } from "lucide-react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 const Index = () => {
   const [excelFile, setExcelFile] = useState<File>();
@@ -20,6 +28,7 @@ const Index = () => {
   const [excelData, setExcelData] = useState<any[]>([]);
   const [wordPlaceholders, setWordPlaceholders] = useState<string[]>([]);
   const [selectedNameColumn, setSelectedNameColumn] = useState<string>("שם מלא רוכש 1");
+  const [language, setLanguage] = useState<"he" | "en">("he");
 
   useEffect(() => {
     if (excelFile) {
@@ -164,11 +173,25 @@ const Index = () => {
       {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center space-x-3">
-            <FileText className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl font-bold text-foreground">
-              Document Generator
-            </h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <FileText className="w-8 h-8 text-primary" />
+              <h1 className="text-2xl font-bold text-foreground">
+                Document Generator
+              </h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <Languages className="w-5 h-5 text-muted-foreground" />
+              <Select value={language} onValueChange={(val: "he" | "en") => setLanguage(val)}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="he">עברית</SelectItem>
+                  <SelectItem value="en">English</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       </header>
@@ -238,6 +261,7 @@ const Index = () => {
                   excelData={excelData}
                   selectedNames={selectedNames}
                   nameColumn={selectedNameColumn}
+                  language={language}
                 />
               </div>
             </div>
