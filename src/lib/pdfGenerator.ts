@@ -50,7 +50,7 @@ export class PDFGenerator {
       width: 210mm;
       min-height: 297mm;
       background: white;
-      padding: 20mm;
+      padding: 0;
       box-sizing: border-box;
       z-index: 999999;
       opacity: 0;
@@ -73,11 +73,25 @@ export class PDFGenerator {
       ignoreWidth: false,
       ignoreHeight: false,
       ignoreFonts: false,
-      breakPages: true,
+      breakPages: false,
       useBase64URL: true,
       renderHeaders: true,
       renderFooters: true,
     });
+    
+    // הסרת רקע אפור וקווים מ-docx-preview
+    const styleOverride = document.createElement("style");
+    styleOverride.textContent = `
+      #pdf-generation-container .docx-wrapper {
+        background: white !important;
+        padding: 0 !important;
+      }
+      #pdf-generation-container .docx-wrapper > section.docx {
+        box-shadow: none !important;
+        margin-bottom: 0 !important;
+      }
+    `;
+    this.container.appendChild(styleOverride);
     
     console.log("✅ DOCX rendered, container HTML length:", this.container.innerHTML.length);
     console.log("Container children:", this.container.children.length);
