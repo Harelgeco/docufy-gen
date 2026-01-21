@@ -5,18 +5,11 @@ import { DocumentPreview } from "@/components/DocumentPreview";
 import { ExportOptions } from "@/components/ExportOptions";
 import { FieldMapping } from "@/components/FieldMapping";
 import { ColumnSelector } from "@/components/ColumnSelector";
-import { FileText, Languages } from "lucide-react";
+import { Header } from "@/components/Header";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { translations, Language } from "@/lib/translations";
 
 const Index = () => {
@@ -207,31 +200,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <FileText className="w-8 h-8 text-primary" />
-              <h1 className="text-2xl font-bold text-foreground">
-                {t.appTitle}
-              </h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <Languages className="w-5 h-5 text-muted-foreground" />
-              <Select value={language} onValueChange={(val: Language) => setLanguage(val)}>
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="he">{t.hebrew}</SelectItem>
-                  <SelectItem value="en">{t.english}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header language={language} onLanguageChange={setLanguage} />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12">
