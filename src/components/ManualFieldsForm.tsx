@@ -1,9 +1,10 @@
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Eraser } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Eraser, Calendar } from "lucide-react";
 import { translations, Language } from "@/lib/translations";
+import { SmartFieldInput, isAutoFilledField, getFieldType } from "./SmartFieldInput";
+import { UploadedImage } from "./ImageUploader";
 
 interface ManualFieldsFormProps {
   placeholders: string[];
@@ -11,6 +12,8 @@ interface ManualFieldsFormProps {
   onFieldChange: (field: string, value: string) => void;
   onClear: () => void;
   language: Language;
+  images: UploadedImage[];
+  onImagesChange: (images: UploadedImage[]) => void;
 }
 
 export const ManualFieldsForm = ({
@@ -19,8 +22,23 @@ export const ManualFieldsForm = ({
   onFieldChange,
   onClear,
   language,
+  images,
+  onImagesChange,
 }: ManualFieldsFormProps) => {
   const t = translations[language];
+
+  // Filter out auto-filled fields
+  const visiblePlaceholders = placeholders.filter(
+    (p) => !isAutoFilledField(p)
+  );
+
+  // Group placeholders: regular fields first, then images
+  const regularFields = visiblePlaceholders.filter(
+    (p) => getFieldType(p) !== "images"
+  );
+  const imageFields = visiblePlaceholders.filter(
+    (p) => getFieldType(p) === "images"
+  );
 
   return (
     <Card className="p-6">
@@ -35,18 +53,47 @@ export const ManualFieldsForm = ({
         </Button>
       </div>
 
-      <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-        {placeholders.map((placeholder) => (
+      {/* Auto-filled fields notice */}
+      {placeholders.some(isAutoFilledField) && (
+        <div className="mb-4 p-3 bg-muted rounded-lg flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-primary" />
+          <span className="text-sm text-muted-foreground">
+            {language === "he"
+              ? "תאריך נוכחי יתמלא אוטומטית"
+              : "Current date will be filled automatically"}
+          </span>
+        </div>
+      )}
+
+      <div className="space-y-5 max-h-[60vh] overflow-y-auto pr-2">
+        {/* Regular fields */}
+        {regularFields.map((placeholder) => (
           <div key={placeholder} className="space-y-2">
             <Label htmlFor={placeholder} className="text-sm font-medium">
               {placeholder}
             </Label>
-            <Input
-              id={placeholder}
+            <SmartFieldInput
+              fieldName={placeholder}
               value={fieldValues[placeholder] || ""}
-              onChange={(e) => onFieldChange(placeholder, e.target.value)}
-              placeholder={`${language === "he" ? "הכנס" : "Enter"} ${placeholder}`}
-              dir="auto"
+              onChange={(value) => onFieldChange(placeholder, value)}
+              language={language}
+            />
+          </div>
+        ))}
+
+        {/* Image fields */}
+        {imageFields.map((placeholder) => (
+          <div key={placeholder} className="space-y-2 pt-4 border-t">
+            <Label htmlFor={placeholder} className="text-sm font-medium">
+              {placeholder}
+            </Label>
+            <SmartFieldInput
+              fieldName={placeholder}
+              value=""
+              onChange={() => {}}
+              language={language}
+              images={images}
+              onImagesChange={onImagesChange}
             />
           </div>
         ))}

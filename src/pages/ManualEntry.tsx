@@ -8,11 +8,13 @@ import { toast } from "sonner";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import { translations, Language } from "@/lib/translations";
+import { UploadedImage } from "@/components/ImageUploader";
 
 const ManualEntry = () => {
   const [wordFile, setWordFile] = useState<File>();
   const [placeholders, setPlaceholders] = useState<string[]>([]);
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
+  const [images, setImages] = useState<UploadedImage[]>([]);
   const [language, setLanguage] = useState<Language>(() => {
     const saved = localStorage.getItem("preferred-language");
     return (saved === "he" || saved === "en") ? saved : "he";
@@ -129,6 +131,8 @@ const ManualEntry = () => {
                 onFieldChange={handleFieldChange}
                 onClear={handleClearFields}
                 language={language}
+                images={images}
+                onImagesChange={setImages}
               />
               <ManualExportOptions
                 disabled={!isFormValid}

@@ -31,14 +31,26 @@ const buildTemplateData = (
   const templateData: Record<string, string> = {};
   Object.entries(fieldValues).forEach(([key, value]) => {
     const normalizedKey = normalizeKey(key);
-    templateData[normalizedKey] = value || "";
+    // Format date values for display
+    if (value && !isNaN(Date.parse(value))) {
+      const date = new Date(value);
+      templateData[normalizedKey] = date.toLocaleDateString(
+        language === "he" ? "he-IL" : "en-US"
+      );
+    } else {
+      templateData[normalizedKey] = value || "";
+    }
   });
 
-  // Add current date
+  // Add current date automatically
   const today = new Date();
   const dateStr = today.toLocaleDateString(language === "he" ? "he-IL" : "en-US");
+  templateData["תאריך נוכחי"] = dateStr;
+  templateData["תאריך היום"] = dateStr;
   templateData["תאריך"] = dateStr;
   templateData["date"] = dateStr;
+  templateData["current date"] = dateStr;
+  templateData["today"] = dateStr;
 
   return templateData;
 };
