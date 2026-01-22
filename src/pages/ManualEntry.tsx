@@ -38,6 +38,7 @@ const ManualEntry = () => {
       const doc = new Docxtemplater(zip, {
         paragraphLoop: true,
         linebreaks: true,
+        delimiters: { start: "<<", end: ">>" },
       });
 
       const fullText = doc.getFullText();

@@ -36,10 +36,11 @@ export const ManualDocumentPreview = ({
         setError(null);
         const data = await wordFile.arrayBuffer();
         const zip = new PizZip(data);
-        const doc = new Docxtemplater(zip, {
-          paragraphLoop: true,
-          linebreaks: true,
-        });
+      const doc = new Docxtemplater(zip, {
+        paragraphLoop: true,
+        linebreaks: true,
+        delimiters: { start: "<<", end: ">>" },
+      });
 
         // Build template data from field values
         const templateData: Record<string, string> = {};
