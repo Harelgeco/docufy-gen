@@ -58,22 +58,29 @@ const buildTemplateData = (
   return templateData;
 };
 
-// Convert image URL to base64
-const imageToBase64 = async (url: string): Promise<string> => {
+// Convert base64 string to Uint8Array for browser compatibility
+const base64ToUint8Array = (base64: string): Uint8Array => {
+  const binaryString = atob(base64);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+};
+
+// Convert image File to base64 string (without prefix)
+const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext("2d");
-      ctx?.drawImage(img, 0, 0);
-      const dataUrl = canvas.toDataURL("image/png");
-      resolve(dataUrl.split(",")[1]); // Return base64 without prefix
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      // Remove data URL prefix (e.g., "data:image/png;base64,")
+      const base64 = result.split(",")[1];
+      resolve(base64);
     };
-    img.onerror = reject;
-    img.src = url;
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
   });
 };
 
@@ -92,16 +99,16 @@ export const ManualExportOptions = ({
       const data = await wordFile.arrayBuffer();
       const zip = new PizZip(data);
 
-      // Configure image module
+      // Configure image module for browser
       const imageOpts = {
         centered: false,
         fileType: "docx",
         getImage: (tagValue: string) => {
-          // tagValue is base64 string
-          return Buffer.from(tagValue, "base64");
+          // tagValue is base64 string - convert to Uint8Array
+          return base64ToUint8Array(tagValue);
         },
         getSize: () => {
-          return [300, 200]; // Default image size in pixels
+          return [400, 300]; // Default image size in pixels
         },
       };
 
@@ -120,14 +127,16 @@ export const ManualExportOptions = ({
       // Convert images to base64 and add to template data
       if (images.length > 0) {
         const imageBase64List = await Promise.all(
-          images.map((img) => imageToBase64(img.preview))
+          images.map((img) => fileToBase64(img.file))
         );
         
-        // Add first image for simple placeholder
-        templateData["תמונות"] = imageBase64List[0] || "";
-        templateData["תמונה"] = imageBase64List[0] || "";
-        templateData["images"] = imageBase64List[0] || "";
-        templateData["image"] = imageBase64List[0] || "";
+        // Add first image for simple placeholder (use %<<תמונות>> in template)
+        if (imageBase64List[0]) {
+          templateData["תמונות"] = imageBase64List[0];
+          templateData["תמונה"] = imageBase64List[0];
+          templateData["images"] = imageBase64List[0];
+          templateData["image"] = imageBase64List[0];
+        }
         
         // Add numbered images for multiple placeholders
         imageBase64List.forEach((base64, index) => {
