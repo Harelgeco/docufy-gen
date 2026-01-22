@@ -140,6 +140,7 @@ const ManualEntry = () => {
                 wordFile={wordFile}
                 fieldValues={fieldValues}
                 language={language}
+                images={images}
               />
             </div>
             <div className="lg:col-span-2">

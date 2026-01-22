@@ -8,12 +8,15 @@ import PizZip from "pizzip";
 import { saveAs } from "file-saver";
 import { PDFGenerator } from "@/lib/pdfGenerator";
 import { translations, Language } from "@/lib/translations";
+import { UploadedImage } from "./ImageUploader";
+import ImageModule from "docxtemplater-image-module-free";
 
 interface ManualExportOptionsProps {
   disabled: boolean;
   wordFile: File;
   fieldValues: Record<string, string>;
   language: Language;
+  images: UploadedImage[];
 }
 
 const normalizeKey = (s: string) =>
@@ -55,11 +58,31 @@ const buildTemplateData = (
   return templateData;
 };
 
+// Convert image URL to base64
+const imageToBase64 = async (url: string): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      ctx?.drawImage(img, 0, 0);
+      const dataUrl = canvas.toDataURL("image/png");
+      resolve(dataUrl.split(",")[1]); // Return base64 without prefix
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+};
+
 export const ManualExportOptions = ({
   disabled,
   wordFile,
   fieldValues,
   language,
+  images,
 }: ManualExportOptionsProps) => {
   const t = translations[language];
   const [generating, setGenerating] = useState(false);
@@ -68,13 +91,51 @@ export const ManualExportOptions = ({
     try {
       const data = await wordFile.arrayBuffer();
       const zip = new PizZip(data);
+
+      // Configure image module
+      const imageOpts = {
+        centered: false,
+        fileType: "docx",
+        getImage: (tagValue: string) => {
+          // tagValue is base64 string
+          return Buffer.from(tagValue, "base64");
+        },
+        getSize: () => {
+          return [300, 200]; // Default image size in pixels
+        },
+      };
+
+      const imageModule = new ImageModule(imageOpts);
+
       const doc = new Docxtemplater(zip, {
         paragraphLoop: true,
         linebreaks: true,
         delimiters: { start: "<<", end: ">>" },
+        modules: [imageModule],
       });
 
+      // Build template data including images
       const templateData = buildTemplateData(fieldValues, language);
+
+      // Convert images to base64 and add to template data
+      if (images.length > 0) {
+        const imageBase64List = await Promise.all(
+          images.map((img) => imageToBase64(img.preview))
+        );
+        
+        // Add first image for simple placeholder
+        templateData["תמונות"] = imageBase64List[0] || "";
+        templateData["תמונה"] = imageBase64List[0] || "";
+        templateData["images"] = imageBase64List[0] || "";
+        templateData["image"] = imageBase64List[0] || "";
+        
+        // Add numbered images for multiple placeholders
+        imageBase64List.forEach((base64, index) => {
+          templateData[`תמונה${index + 1}`] = base64;
+          templateData[`image${index + 1}`] = base64;
+        });
+      }
+
       doc.render(templateData);
 
       return doc.getZip().generate({
