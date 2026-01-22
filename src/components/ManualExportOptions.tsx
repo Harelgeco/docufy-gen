@@ -71,6 +71,7 @@ export const ManualExportOptions = ({
       const doc = new Docxtemplater(zip, {
         paragraphLoop: true,
         linebreaks: true,
+        delimiters: { start: "<<", end: ">>" },
       });
 
       const templateData = buildTemplateData(fieldValues, language);
