@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FileUploader } from "@/components/FileUploader";
 import { ManualFieldsForm } from "@/components/ManualFieldsForm";
 import { ManualDocumentPreview } from "@/components/ManualDocumentPreview";
 import { ManualExportOptions } from "@/components/ManualExportOptions";
 import { Header } from "@/components/Header";
+import { TemplateSelector, PREDEFINED_TEMPLATES, PredefinedTemplate } from "@/components/TemplateSelector";
 import { toast } from "sonner";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
@@ -15,6 +16,10 @@ const ManualEntry = () => {
   const [placeholders, setPlaceholders] = useState<string[]>([]);
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [images, setImages] = useState<UploadedImage[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const [customFile, setCustomFile] = useState<File>();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [language, setLanguage] = useState<Language>(() => {
     const saved = localStorage.getItem("preferred-language");
     return (saved === "he" || saved === "en") ? saved : "he";
@@ -77,6 +82,50 @@ const ManualEntry = () => {
     }
   };
 
+  const handleSelectPredefinedTemplate = async (template: PredefinedTemplate) => {
+    setSelectedTemplateId(template.id);
+    
+    try {
+      // Fetch the template file from public folder
+      const response = await fetch(template.path);
+      if (!response.ok) {
+        throw new Error("Failed to fetch template");
+      }
+      
+      const blob = await response.blob();
+      const file = new File([blob], template.name[language] + ".docx", {
+        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      });
+      
+      setWordFile(file);
+      toast.success(
+        language === "he"
+          ? `התבנית "${template.name.he}" נטענה בהצלחה`
+          : `Template "${template.name.en}" loaded successfully`
+      );
+    } catch (error) {
+      console.error("Error loading template:", error);
+      toast.error(
+        language === "he"
+          ? "שגיאה בטעינת התבנית"
+          : "Error loading template"
+      );
+    }
+  };
+
+  const handleUploadCustomClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleCustomFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCustomFile(file);
+      setSelectedTemplateId("custom");
+      setWordFile(file);
+    }
+  };
+
   const handleFieldChange = (field: string, value: string) => {
     setFieldValues((prev) => ({
       ...prev,
@@ -90,6 +139,7 @@ const ManualEntry = () => {
       clearedValues[p] = "";
     });
     setFieldValues(clearedValues);
+    setImages([]);
   };
 
   const isFormValid = placeholders.length > 0 && 
@@ -110,15 +160,23 @@ const ManualEntry = () => {
           </p>
         </div>
 
-        {/* Template Upload */}
+        {/* Template Selection */}
         <div className="max-w-xl mx-auto mb-12">
-          <FileUploader
-            title={t.uploadWord}
-            description={t.uploadWordDesc}
-            accept=".docx,.doc"
-            onFileSelect={setWordFile}
-            selectedFile={wordFile}
+          <TemplateSelector
             language={language}
+            selectedTemplateId={selectedTemplateId}
+            onSelectTemplate={handleSelectPredefinedTemplate}
+            onUploadCustom={handleUploadCustomClick}
+            customFile={customFile}
+          />
+          
+          {/* Hidden file input for custom upload */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".docx,.doc"
+            className="hidden"
+            onChange={handleCustomFileSelect}
           />
         </div>
 
