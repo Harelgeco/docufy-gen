@@ -63,17 +63,20 @@ const buildTemplateData = (
   return templateData;
 };
 
-// Convert base64 string to Uint8Array for browser compatibility
-const base64ToUint8Array = (base64: string): Uint8Array => {
-  // Handle data URL format if present
-  const cleanBase64 = base64.includes(",") ? base64.split(",")[1] : base64;
-  const binaryString = atob(cleanBase64);
+// Convert base64 data URL to ArrayBuffer for docxtemplater-image-module-free
+const base64DataURLToArrayBuffer = (dataURL: string): ArrayBuffer | false => {
+  const base64Regex = /^data:image\/(png|jpg|jpeg|gif|svg|svg\+xml|webp);base64,/;
+  if (!base64Regex.test(dataURL)) {
+    return false;
+  }
+  const stringBase64 = dataURL.replace(base64Regex, "");
+  const binaryString = window.atob(stringBase64);
   const len = binaryString.length;
   const bytes = new Uint8Array(len);
   for (let i = 0; i < len; i++) {
     bytes[i] = binaryString.charCodeAt(i);
   }
-  return bytes;
+  return bytes.buffer; // Return ArrayBuffer, not Uint8Array
 };
 
 // Convert image File to base64 data URL
@@ -103,17 +106,17 @@ export const ManualExportOptions = ({
       const data = await wordFile.arrayBuffer();
       const zip = new PizZip(data);
 
-      // Configure image module for browser with proper options
+      // Configure image module - uses {%tagName} syntax (separate from text delimiters)
       const imageOpts = {
         centered: false,
         fileType: "docx" as const,
         getImage: (tagValue: string) => {
-          // tagValue is base64 data URL - convert to Uint8Array
-          return base64ToUint8Array(tagValue);
+          // tagValue is base64 data URL - convert to ArrayBuffer
+          return base64DataURLToArrayBuffer(tagValue);
         },
-        getSize: (img: Uint8Array, tagValue: string, tagName: string) => {
-          // Return default size - you can customize based on tagName if needed
-          return [400, 300]; // Width x Height in pixels
+        getSize: () => {
+          // Return default size in pixels [width, height]
+          return [400, 300];
         },
       };
 
@@ -234,8 +237,8 @@ export const ManualExportOptions = ({
           </AlertTitle>
           <AlertDescription className="text-xs" dir={language === "he" ? "rtl" : "ltr"}>
             {language === "he"
-              ? "כדי שתמונות יופיעו במסמך, התבנית צריכה להכיל: %<<תמונות>> או %<<תמונה1>>"
-              : "For images to appear in the document, the template must contain %<<images>> or %<<image1>>"}
+              ? "כדי שתמונות יופיעו במסמך, התבנית צריכה להכיל: {%תמונות} או {%תמונה1}"
+              : "For images to appear in the document, the template must contain {%images} or {%image1}"}
           </AlertDescription>
         </Alert>
       )}
