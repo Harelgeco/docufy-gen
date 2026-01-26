@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, File } from "lucide-react";
+import { FileText, File, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
@@ -10,6 +10,11 @@ import { PDFGenerator } from "@/lib/pdfGenerator";
 import { translations, Language } from "@/lib/translations";
 import { UploadedImage } from "./ImageUploader";
 import ImageModule from "docxtemplater-image-module-free";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert";
 
 interface ManualExportOptionsProps {
   disabled: boolean;
@@ -60,7 +65,9 @@ const buildTemplateData = (
 
 // Convert base64 string to Uint8Array for browser compatibility
 const base64ToUint8Array = (base64: string): Uint8Array => {
-  const binaryString = atob(base64);
+  // Handle data URL format if present
+  const cleanBase64 = base64.includes(",") ? base64.split(",")[1] : base64;
+  const binaryString = atob(cleanBase64);
   const len = binaryString.length;
   const bytes = new Uint8Array(len);
   for (let i = 0; i < len; i++) {
@@ -69,15 +76,12 @@ const base64ToUint8Array = (base64: string): Uint8Array => {
   return bytes;
 };
 
-// Convert image File to base64 string (without prefix)
-const fileToBase64 = (file: File): Promise<string> => {
+// Convert image File to base64 data URL
+const fileToBase64DataUrl = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
-      const result = reader.result as string;
-      // Remove data URL prefix (e.g., "data:image/png;base64,")
-      const base64 = result.split(",")[1];
-      resolve(base64);
+      resolve(reader.result as string);
     };
     reader.onerror = reject;
     reader.readAsDataURL(file);
@@ -99,16 +103,17 @@ export const ManualExportOptions = ({
       const data = await wordFile.arrayBuffer();
       const zip = new PizZip(data);
 
-      // Configure image module for browser
+      // Configure image module for browser with proper options
       const imageOpts = {
         centered: false,
-        fileType: "docx",
+        fileType: "docx" as const,
         getImage: (tagValue: string) => {
-          // tagValue is base64 string - convert to Uint8Array
+          // tagValue is base64 data URL - convert to Uint8Array
           return base64ToUint8Array(tagValue);
         },
-        getSize: () => {
-          return [400, 300]; // Default image size in pixels
+        getSize: (img: Uint8Array, tagValue: string, tagName: string) => {
+          // Return default size - you can customize based on tagName if needed
+          return [400, 300]; // Width x Height in pixels
         },
       };
 
@@ -124,24 +129,26 @@ export const ManualExportOptions = ({
       // Build template data including images
       const templateData = buildTemplateData(fieldValues, language);
 
-      // Convert images to base64 and add to template data
+      // Convert images to base64 data URLs and add to template data
       if (images.length > 0) {
-        const imageBase64List = await Promise.all(
-          images.map((img) => fileToBase64(img.file))
+        const imageDataUrls = await Promise.all(
+          images.map((img) => fileToBase64DataUrl(img.file))
         );
         
-        // Add first image for simple placeholder (use %<<תמונות>> in template)
-        if (imageBase64List[0]) {
-          templateData["תמונות"] = imageBase64List[0];
-          templateData["תמונה"] = imageBase64List[0];
-          templateData["images"] = imageBase64List[0];
-          templateData["image"] = imageBase64List[0];
+        // Add first image for simple placeholder
+        // Template should use: %<<תמונות>> or %<<image>>
+        if (imageDataUrls[0]) {
+          templateData["תמונות"] = imageDataUrls[0];
+          templateData["תמונה"] = imageDataUrls[0];
+          templateData["images"] = imageDataUrls[0];
+          templateData["image"] = imageDataUrls[0];
         }
         
         // Add numbered images for multiple placeholders
-        imageBase64List.forEach((base64, index) => {
-          templateData[`תמונה${index + 1}`] = base64;
-          templateData[`image${index + 1}`] = base64;
+        // Template should use: %<<תמונה1>>, %<<תמונה2>>, etc.
+        imageDataUrls.forEach((dataUrl, index) => {
+          templateData[`תמונה${index + 1}`] = dataUrl;
+          templateData[`image${index + 1}`] = dataUrl;
         });
       }
 
@@ -210,11 +217,28 @@ export const ManualExportOptions = ({
     }
   };
 
+  const hasImages = images.length > 0;
+
   return (
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-4 text-foreground">
         {t.exportOptions}
       </h3>
+
+      {/* Image syntax notice */}
+      {hasImages && (
+        <Alert className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>
+            {language === "he" ? "שים לב" : "Note"}
+          </AlertTitle>
+          <AlertDescription className="text-xs">
+            {language === "he"
+              ? "כדי שתמונות יופיעו במסמך, התבנית צריכה להכיל %<<תמונות>> או %<<תמונה1>>"
+              : "For images to appear in the document, the template must contain %<<images>> or %<<image1>>"}
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="space-y-3">
         <Button

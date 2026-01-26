@@ -59,6 +59,12 @@ export const translations = {
     uploadTemplateToStart: "העלה תבנית וורד כדי להתחיל",
     empty: "(ריק)",
     
+    // Template selector
+    selectTemplate: "בחר תבנית",
+    selectTemplateDesc: "בחר תבנית מוכנה מראש או העלה תבנית משלך",
+    uploadCustomTemplate: "העלה תבנית משלך",
+    orUploadOwn: "או העלה משלך",
+    
     // Language selector
     hebrew: "עברית",
     english: "English",
@@ -122,6 +128,12 @@ export const translations = {
     uploadToPreview: "Upload files and select a name to see preview",
     uploadTemplateToStart: "Upload a Word template to get started",
     empty: "(empty)",
+    
+    // Template selector
+    selectTemplate: "Select Template",
+    selectTemplateDesc: "Choose a pre-defined template or upload your own",
+    uploadCustomTemplate: "Upload Custom Template",
+    orUploadOwn: "or upload your own",
     
     // Language selector
     hebrew: "עברית",
