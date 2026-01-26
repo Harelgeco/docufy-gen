@@ -232,9 +232,9 @@ export const ManualExportOptions = ({
           <AlertTitle>
             {language === "he" ? "שים לב" : "Note"}
           </AlertTitle>
-          <AlertDescription className="text-xs">
+          <AlertDescription className="text-xs" dir={language === "he" ? "rtl" : "ltr"}>
             {language === "he"
-              ? "כדי שתמונות יופיעו במסמך, התבנית צריכה להכיל %<<תמונות>> או %<<תמונה1>>"
+              ? "כדי שתמונות יופיעו במסמך, התבנית צריכה להכיל: %<<תמונות>> או %<<תמונה1>>"
               : "For images to appear in the document, the template must contain %<<images>> or %<<image1>>"}
           </AlertDescription>
         </Alert>
