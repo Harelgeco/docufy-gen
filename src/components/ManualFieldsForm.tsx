@@ -1,10 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Eraser, Calendar } from "lucide-react";
+import { Eraser, Calendar, Image } from "lucide-react";
 import { translations, Language } from "@/lib/translations";
 import { SmartFieldInput, isAutoFilledField, getFieldType } from "./SmartFieldInput";
-import { UploadedImage } from "./ImageUploader";
+import { ImageUploader, UploadedImage } from "./ImageUploader";
 
 interface ManualFieldsFormProps {
   placeholders: string[];
@@ -32,7 +32,7 @@ export const ManualFieldsForm = ({
     (p) => !isAutoFilledField(p)
   );
 
-  // Group placeholders: regular fields first, then images
+  // Group placeholders: regular fields first, then images (from placeholders)
   const regularFields = visiblePlaceholders.filter(
     (p) => getFieldType(p) !== "images"
   );
@@ -81,7 +81,7 @@ export const ManualFieldsForm = ({
           </div>
         ))}
 
-        {/* Image fields */}
+        {/* Image fields from placeholders */}
         {imageFields.map((placeholder) => (
           <div key={placeholder} className="space-y-2 pt-4 border-t">
             <Label htmlFor={placeholder} className="text-sm font-medium">
@@ -97,6 +97,26 @@ export const ManualFieldsForm = ({
             />
           </div>
         ))}
+
+        {/* ALWAYS show image upload section for {%תמונות} placeholders */}
+        {imageFields.length === 0 && (
+          <div className="space-y-2 pt-4 border-t">
+            <Label className="text-sm font-medium flex items-center gap-2">
+              <Image className="w-4 h-4" />
+              {language === "he" ? "תמונות" : "Images"}
+            </Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              {language === "he"
+                ? "התמונות יוכנסו ל-{%תמונות} בתבנית"
+                : "Images will be inserted into {%images} in template"}
+            </p>
+            <ImageUploader
+              images={images}
+              onImagesChange={onImagesChange}
+              language={language}
+            />
+          </div>
+        )}
       </div>
     </Card>
   );
