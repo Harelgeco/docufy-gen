@@ -142,8 +142,8 @@ const ManualEntry = () => {
     setImages([]);
   };
 
-  const isFormValid = placeholders.length > 0 && 
-    placeholders.some((p) => fieldValues[p]?.trim() !== "");
+  const isFormValid =
+    images.length > 0 || placeholders.some((p) => fieldValues[p]?.trim() !== "");
 
   return (
     <div className="min-h-screen bg-background">
@@ -181,7 +181,7 @@ const ManualEntry = () => {
         </div>
 
         {/* Form and Preview */}
-        {wordFile && placeholders.length > 0 && (
+        {wordFile && (
           <div className="grid lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1 space-y-6">
               <ManualFieldsForm
@@ -206,6 +206,7 @@ const ManualEntry = () => {
                 wordFile={wordFile}
                 fieldValues={fieldValues}
                 language={language}
+                images={images}
               />
             </div>
           </div>

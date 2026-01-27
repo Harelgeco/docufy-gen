@@ -4,11 +4,14 @@ import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import { renderAsync } from "docx-preview";
 import { translations, Language } from "@/lib/translations";
+import ImageModule from "docxtemplater-image-module-free";
+import { UploadedImage } from "@/components/ImageUploader";
 
 interface ManualDocumentPreviewProps {
   wordFile: File;
   fieldValues: Record<string, string>;
   language: Language;
+  images?: UploadedImage[];
 }
 
 const normalizeKey = (s: string) =>
@@ -23,10 +26,37 @@ export const ManualDocumentPreview = ({
   wordFile,
   fieldValues,
   language,
+  images = [],
 }: ManualDocumentPreviewProps) => {
   const t = translations[language];
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Convert base64 data URL to ArrayBuffer for docxtemplater-image-module-free
+  const base64DataURLToArrayBuffer = (dataURL: string): ArrayBuffer | false => {
+    const base64Regex =
+      /^data:image\/(png|jpg|jpeg|gif|svg|svg\+xml|webp);base64,/;
+    if (!base64Regex.test(dataURL)) {
+      return false;
+    }
+    const stringBase64 = dataURL.replace(base64Regex, "");
+    const binaryString = window.atob(stringBase64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+  };
+
+  const fileToBase64DataUrl = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
 
   useEffect(() => {
     const renderPreview = async () => {
@@ -36,11 +66,20 @@ export const ManualDocumentPreview = ({
         setError(null);
         const data = await wordFile.arrayBuffer();
         const zip = new PizZip(data);
-      const doc = new Docxtemplater(zip, {
-        paragraphLoop: true,
-        linebreaks: true,
-        delimiters: { start: "<<", end: ">>" },
-      });
+
+        const imageModule = new ImageModule({
+          centered: false,
+          fileType: "docx" as const,
+          getImage: (tagValue: string) => base64DataURLToArrayBuffer(tagValue),
+          getSize: () => [400, 300],
+        });
+
+        const doc = new Docxtemplater(zip, {
+          paragraphLoop: true,
+          linebreaks: true,
+          delimiters: { start: "<<", end: ">>" },
+          modules: [imageModule],
+        });
 
         // Build template data from field values
         const templateData: Record<string, string> = {};
@@ -66,6 +105,25 @@ export const ManualDocumentPreview = ({
         templateData["date"] = dateStr;
         templateData["current date"] = dateStr;
         templateData["today"] = dateStr;
+
+        // Add images (for {%תמונות} / {%images} tags)
+        if (images.length > 0) {
+          const imageDataUrls = await Promise.all(
+            images.map((img) => fileToBase64DataUrl(img.file))
+          );
+
+          if (imageDataUrls[0]) {
+            templateData["תמונות"] = imageDataUrls[0];
+            templateData["תמונה"] = imageDataUrls[0];
+            templateData["images"] = imageDataUrls[0];
+            templateData["image"] = imageDataUrls[0];
+          }
+
+          imageDataUrls.forEach((dataUrl, index) => {
+            templateData[`תמונה${index + 1}`] = dataUrl;
+            templateData[`image${index + 1}`] = dataUrl;
+          });
+        }
 
         doc.render(templateData);
 
@@ -103,7 +161,7 @@ export const ManualDocumentPreview = ({
     };
 
     renderPreview();
-  }, [wordFile, fieldValues, language]);
+  }, [wordFile, fieldValues, language, images]);
 
   return (
     <Card className="p-6">
