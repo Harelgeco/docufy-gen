@@ -24,8 +24,14 @@ const normalizeKey = (s: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
-const buildTemplateData = (row: Record<string, string>) => {
+const buildTemplateData = (row: Record<string, string>, language: string) => {
   const mapped: Record<string, string> = {};
+  const currentDate = new Date().toLocaleDateString(language === "he" ? "he-IL" : "en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  for (const k of ["תאריך נוכחי", "תאריך היום", "date", "today", "current date"]) mapped[k] = currentDate;
   for (const [key, value] of Object.entries(row)) {
     const v = value ?? "";
     mapped[key] = v;
@@ -66,7 +72,7 @@ export const DocumentPreview = ({
           delimiters: { start: "<<", end: ">>" },
         });
 
-        doc.render(buildTemplateData(rowData));
+        doc.render(buildTemplateData(rowData, language));
 
         // Generate filled DOCX blob
         const outputBlob = doc.getZip().generate({
@@ -133,7 +139,7 @@ export const DocumentPreview = ({
     };
 
     renderPreview();
-  }, [wordFile, selectedName, excelData, nameColumn]);
+  }, [wordFile, selectedName, excelData, nameColumn, language]);
 
   return (
     <Card className="p-6 h-full">

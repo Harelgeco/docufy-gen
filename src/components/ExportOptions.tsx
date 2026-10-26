@@ -38,7 +38,7 @@ const buildTemplateData = (row: Record<string, string>, language: "he" | "en") =
     month: '2-digit',
     day: '2-digit'
   });
-  mapped['תאריך נוכחי'] = currentDate;
+  for (const k of ["תאריך נוכחי", "תאריך היום", "date", "today", "current date"]) mapped[k] = currentDate;
   
   for (const [key, value] of Object.entries(row)) {
     const v = value ?? "";
