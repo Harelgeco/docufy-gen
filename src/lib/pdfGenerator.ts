@@ -48,7 +48,8 @@ export class PDFGenerator {
       position: fixed;
       top: 0;
       left: 0;
-      width: 210mm;
+      width: max-content;
+      direction: ltr;
       background: white;
       padding: 0;
       box-sizing: border-box;
