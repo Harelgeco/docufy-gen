@@ -17,6 +17,21 @@ const unwrapSdt = (xml: string) => {
   return out;
 };
 
+// The renderer ignores pictures used as a shape "fill" (e.g. a photo inside a circle).
+// Show that picture as the shape's image, clipped to a circle for ovals.
+const showPictureFills = (xml: string) =>
+  xml.replace(/<v:(oval|rect|roundrect|shape)\b([^>]*)>([\s\S]*?)<\/v:\1>/g, (all, tag, attrs, inner) => {
+    const fill = inner.match(/<v:fill\b[^>]*\br:id="([^"]+)"[^>]*\/>/);
+    if (!fill || inner.includes("<v:imagedata")) return all;
+    let a = attrs;
+    if (tag === "oval") {
+      a = /style="/.test(a)
+        ? a.replace(/style="/, 'style="border-radius:50%;overflow:hidden;')
+        : a + ' style="border-radius:50%;overflow:hidden"';
+    }
+    return `<v:${tag}${a}>${inner}<v:imagedata r:id="${fill[1]}" o:title=""/></v:${tag}>`;
+  });
+
 export const prepareDocxForRender = async (blob: Blob): Promise<Blob> => {
   try {
     const zip = new PizZip(await blob.arrayBuffer());
