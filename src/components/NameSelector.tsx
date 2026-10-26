@@ -24,8 +24,11 @@ export const NameSelector = ({
   const t = translations[language];
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredNames = names.filter((name) =>
-    name.toLowerCase().includes(searchQuery.toLowerCase())
+  const uniqueNames = Array.from(
+    new Set(names.map((n) => String(n ?? "").trim()).filter(Boolean))
+  );
+  const filteredNames = uniqueNames.filter((name) =>
+    name.toLowerCase().includes(searchQuery.trim().toLowerCase())
   );
 
   return (
@@ -48,20 +51,20 @@ export const NameSelector = ({
       </div>
       <ScrollArea className="h-[400px] pr-4">
         <div className="space-y-3">
-          {filteredNames.map((name) => (
+          {filteredNames.map((name, idx) => (
             <div
-              key={name}
+              key={`${columnName}-${idx}-${name}`}
               className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
             >
               <Checkbox
-                id={name}
+                id={`opt-${columnName}-${idx}`}
                 checked={selectedNames.includes(name)}
                 onCheckedChange={(checked) =>
                   onSelectionChange(name, checked as boolean)
                 }
               />
               <label
-                htmlFor={name}
+                htmlFor={`opt-${columnName}-${idx}`}
                 className="flex-1 text-sm font-medium text-foreground cursor-pointer"
               >
                 {name}
