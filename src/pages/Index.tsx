@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FileUploader } from "@/components/FileUploader";
 import { NameSelector } from "@/components/NameSelector";
 import { DocumentPreview } from "@/components/DocumentPreview";
@@ -15,6 +15,10 @@ import { translations, Language } from "@/lib/translations";
 const Index = () => {
   const [excelFile, setExcelFile] = useState<File>();
   const [wordFile, setWordFile] = useState<File>();
+  const [validatedExcelFile, setValidatedExcelFile] = useState<File>();
+  const [validatedWordFile, setValidatedWordFile] = useState<File>();
+  const nextStepRef = useRef<HTMLDivElement>(null);
+  const lastScrolledFiles = useRef<[File, File]>();
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
   const [names, setNames] = useState<string[]>([]);
   const [excelHeaders, setExcelHeaders] = useState<string[]>([]);
@@ -50,7 +54,23 @@ const Index = () => {
     }
   }, [wordFile]);
 
+  useEffect(() => {
+    if (!excelFile || !wordFile || validatedExcelFile !== excelFile || validatedWordFile !== wordFile) return;
+    const previous = lastScrolledFiles.current;
+    if (previous?.[0] === excelFile && previous?.[1] === wordFile) return;
+    const frame = requestAnimationFrame(() => {
+      if (!nextStepRef.current) return;
+      lastScrolledFiles.current = [excelFile, wordFile];
+      nextStepRef.current.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+        block: "start",
+      });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [excelFile, wordFile, validatedExcelFile, validatedWordFile]);
+
   const parseExcelFile = async (file: File) => {
+    setValidatedExcelFile(undefined);
     try {
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data, { type: "array" });
@@ -121,8 +141,14 @@ const Index = () => {
         });
         return rowData;
       });
+
+      if (!headers.some(Boolean) || !dataRows.some((row) => Object.values(row).some(Boolean))) {
+        toast.error("No data found in Excel file");
+        return;
+      }
       
       setExcelData(dataRows);
+      setValidatedExcelFile(file);
       
       // Set default column if it exists
       if (headers.includes("שם מלא רוכש 1")) {
@@ -159,6 +185,8 @@ const Index = () => {
   };
 
   const parseWordTemplate = async (file: File) => {
+    setValidatedWordFile(undefined);
+    setWordPlaceholders([]);
     try {
       const data = await file.arrayBuffer();
       const zip = new PizZip(data);
@@ -176,6 +204,7 @@ const Index = () => {
         const placeholders = matches.map((match) => match.replace(/<<|>>/g, ""));
         const uniquePlaceholders = [...new Set(placeholders)];
         setWordPlaceholders(uniquePlaceholders);
+        setValidatedWordFile(file);
         toast.success(`Found ${uniquePlaceholders.length} placeholders in template`);
       } else {
         toast.warning("No placeholders (<<field>>) found in Word template");
@@ -231,6 +260,7 @@ const Index = () => {
         </div>
 
         {/* Column Selection */}
+        <div ref={nextStepRef} className="scroll-mt-6">
         {excelFile && excelHeaders.length > 0 && (
           <ColumnSelector
             columns={excelHeaders}
@@ -239,6 +269,7 @@ const Index = () => {
             language={language}
           />
         )}
+        </div>
 
         {/* Field Mapping Section */}
         {excelFile && wordFile && excelHeaders.length > 0 && wordPlaceholders.length > 0 && (
