@@ -15,6 +15,7 @@ const ManualEntry = () => {
   const [placeholders, setPlaceholders] = useState<string[]>([]);
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [images, setImages] = useState<UploadedImage[]>([]);
+  const [hasImagePlaceholder, setHasImagePlaceholder] = useState(false);
 
   const [language, setLanguage] = useState<Language>(() => {
     const saved = localStorage.getItem("preferred-language");
@@ -42,13 +43,32 @@ const ManualEntry = () => {
         delimiters: { start: "<<", end: ">>" },
       });
 
-      const fullText = doc.getFullText();
-      const placeholderRegex = /<<([^>]+)>>/g;
-      const matches = fullText.match(placeholderRegex);
+      // Read text directly from every Word part (body, headers, footers),
+      // paragraph by paragraph, so placeholders split across runs/fields are found.
+      const decode = (s: string) =>
+        s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"')
+         .replace(/&apos;/g, "'").replace(/&amp;/g, "&");
+      const parts = Object.keys(zip.files).filter((n) =>
+        /^word\/(document|header\d*|footer\d*|footnotes|endnotes)\.xml$/.test(n)
+      );
+      let allText = doc.getFullText() + "\n";
+      let imgTag = false;
+      for (const name of parts) {
+        const xml = zip.file(name)?.asText() || "";
+        for (const para of xml.split(/<\/w:p>/)) {
+          const texts = [...para.matchAll(/<w:t(?:\s[^>]*)?>([^<]*)<\/w:t>/g)].map((m) => decode(m[1]));
+          const line = texts.join("");
+          allText += line + "\n";
+          if (/\{%[^}]+\}/.test(line)) imgTag = true;
+        }
+      }
+      setHasImagePlaceholder(imgTag);
+      const matches = [...allText.matchAll(/<<([^<>]+)>>/g)].map((m) =>
+        m[1].replace(/\s+/g, " ").trim()
+      );
 
-      if (matches) {
-        const extracted = matches.map((match) => match.replace(/<<|>>/g, ""));
-        const uniquePlaceholders = [...new Set(extracted)];
+      if (matches.length) {
+        const uniquePlaceholders = [...new Set(matches)].filter(Boolean);
         setPlaceholders(uniquePlaceholders);
         
         // Initialize empty field values
