@@ -106,4 +106,3 @@ All colors MUST be HSL.
 
 /* Word documents rendered in preview/PDF keep their own picture sizes */
 section.docx-preview img, section.docx-wrapper img, section.docx-preview svg, section.docx-wrapper svg { max-width: none; max-height: none; }
-section.docx-preview svg image, section.docx-wrapper svg image { preserveAspectRatio: xMidYMid slice; }
