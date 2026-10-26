@@ -19,16 +19,19 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          tier: Database["public"]["Enums"]["subscription_tier"]
         }
         Insert: {
           created_at?: string
           email?: string | null
           id: string
+          tier?: Database["public"]["Enums"]["subscription_tier"]
         }
         Update: {
           created_at?: string
           email?: string | null
           id?: string
+          tier?: Database["public"]["Enums"]["subscription_tier"]
         }
         Relationships: []
       }
@@ -68,6 +71,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      subscription_tier: "free" | "pro" | "enterprise"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -196,6 +200,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      subscription_tier: ["free", "pro", "enterprise"],
     },
   },
 } as const
