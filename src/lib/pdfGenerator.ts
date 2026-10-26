@@ -91,6 +91,9 @@ export class PDFGenerator {
     this.container.querySelectorAll<HTMLElement>(".docx-wrapper-wrapper > section.docx-wrapper").forEach((page) => {
       page.style.boxShadow = "none";
       page.style.margin = "0";
+      // Keep "behind text" pictures behind the text when captured
+      page.style.position = "relative";
+      page.style.zIndex = "0";
     });
     
     console.log("✅ DOCX rendered, container HTML length:", this.container.innerHTML.length);
