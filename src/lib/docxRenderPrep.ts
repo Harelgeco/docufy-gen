@@ -103,8 +103,6 @@ const fixFlippedPictures = async (zip: PizZip, part: string, xml: string) => {
 export const prepareDocxForRender = async (blob: Blob): Promise<Blob> => {
   try {
     const zip = new PizZip(await blob.arrayBuffer());
-    Object.keys(zip.files)
-      .filter((n) => /^word\/(document|header\d*|footer\d*|footnotes|endnotes)\.xml$/.test(n))
     const parts = Object.keys(zip.files).filter((n) =>
       /^word\/(document|header\d*|footer\d*|footnotes|endnotes)\.xml$/.test(n)
     );
