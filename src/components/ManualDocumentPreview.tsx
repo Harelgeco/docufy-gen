@@ -78,7 +78,7 @@ export const ManualDocumentPreview = ({
           paragraphLoop: true,
           linebreaks: true,
           delimiters: { start: "<<", end: ">>" },
-          modules: [imageModule],
+          modules: /\{%[^}]+\}/.test(Object.keys(zip.files).filter((n) => /^word\/.*\.xml$/.test(n)).map((n) => (zip.file(n)?.asText() || "").replace(/<[^>]+>/g, "")).join("")) ? [imageModule] : [],
         });
 
         // Build template data from field values
@@ -142,7 +142,7 @@ export const ManualDocumentPreview = ({
           ignoreFonts: false,
           breakPages: true,
           ignoreLastRenderedPageBreak: true,
-          experimental: false,
+          experimental: true,
           trimXmlDeclaration: true,
           useBase64URL: true,
           renderHeaders: true,

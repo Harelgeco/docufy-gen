@@ -126,7 +126,7 @@ export const ManualExportOptions = ({
         paragraphLoop: true,
         linebreaks: true,
         delimiters: { start: "<<", end: ">>" },
-        modules: [imageModule],
+        modules: /\{%[^}]+\}/.test(Object.keys(zip.files).filter((n) => /^word\/.*\.xml$/.test(n)).map((n) => (zip.file(n)?.asText() || "").replace(/<[^>]+>/g, "")).join("")) ? [imageModule] : [],
       });
 
       // Build template data including images
