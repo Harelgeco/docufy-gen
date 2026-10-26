@@ -73,6 +73,7 @@ export class PDFGenerator {
       ignoreHeight: false,
       ignoreFonts: false,
       breakPages: true,
+      experimental: true,
       useBase64URL: true,
       renderHeaders: true,
       renderFooters: true,
