@@ -1,6 +1,7 @@
 import { renderAsync } from "docx-preview";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { prepareDocxForRender } from "./docxRenderPrep";
 
 export interface PDFGeneratorOptions {
   docxBlob: Blob;
@@ -66,7 +67,7 @@ export class PDFGenerator {
   private async renderDocx(blob: Blob): Promise<void> {
     if (!this.container) throw new Error("No container");
     
-    await renderAsync(blob, this.container, undefined, {
+    await renderAsync(await prepareDocxForRender(blob), this.container, undefined, {
       className: "docx-wrapper",
       inWrapper: true,
       ignoreWidth: false,

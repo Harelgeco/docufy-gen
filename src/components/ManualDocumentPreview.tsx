@@ -6,6 +6,7 @@ import { renderAsync } from "docx-preview";
 import { translations, Language } from "@/lib/translations";
 import ImageModule from "docxtemplater-image-module-free";
 import { UploadedImage } from "@/components/ImageUploader";
+import { prepareDocxForRender } from "@/lib/docxRenderPrep";
 
 interface ManualDocumentPreviewProps {
   wordFile: File;
@@ -134,7 +135,7 @@ export const ManualDocumentPreview = ({
         });
 
         containerRef.current.innerHTML = "";
-        await renderAsync(outputBlob, containerRef.current, undefined, {
+        await renderAsync(await prepareDocxForRender(outputBlob), containerRef.current, undefined, {
           className: "docx-preview",
           inWrapper: true,
           ignoreWidth: false,
