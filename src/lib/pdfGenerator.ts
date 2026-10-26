@@ -48,9 +48,8 @@ export class PDFGenerator {
       top: 0;
       left: 0;
       width: 210mm;
-      min-height: 297mm;
       background: white;
-      padding: 20mm;
+      padding: 0;
       box-sizing: border-box;
       z-index: 999999;
       opacity: 0;
@@ -82,9 +81,13 @@ export class PDFGenerator {
     // Preview chrome is not template content: never include its gray backdrop
     // or page shadows in the PDF. Keep all document elements untouched.
     const wrapper = this.container.querySelector<HTMLElement>(".docx-wrapper-wrapper");
-    if (wrapper) wrapper.style.background = "transparent";
+    if (wrapper) {
+      wrapper.style.background = "transparent";
+      wrapper.style.padding = "0";
+    }
     this.container.querySelectorAll<HTMLElement>(".docx-wrapper-wrapper > section.docx-wrapper").forEach((page) => {
       page.style.boxShadow = "none";
+      page.style.margin = "0";
     });
     
     console.log("✅ DOCX rendered, container HTML length:", this.container.innerHTML.length);
@@ -138,56 +141,41 @@ export class PDFGenerator {
     
     console.log("Starting canvas capture...");
     
-    // Capture with html2canvas
-    const canvas = await html2canvas(this.container, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: "#ffffff",
-      logging: true,
-      width: this.container.scrollWidth,
-      height: this.container.scrollHeight,
-      windowWidth: this.container.scrollWidth,
-      windowHeight: this.container.scrollHeight,
-    });
-    
-    console.log("✅ Canvas created:", canvas.width, "x", canvas.height);
-    
-    if (canvas.width === 0 || canvas.height === 0) {
-      throw new Error("Canvas is empty!");
+    // Capture actual Word pages, not the preview container and its spacing.
+    // This preserves original page margins and avoids a trailing overflow page.
+    const pages = Array.from(this.container.querySelectorAll<HTMLElement>(
+      ".docx-wrapper-wrapper > section.docx-wrapper"
+    ));
+    if (pages.length === 0) throw new Error("No document pages rendered");
+
+    let pdf: jsPDF | undefined;
+    for (const page of pages) {
+      const bounds = page.getBoundingClientRect();
+      const canvas = await html2canvas(page, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: "#ffffff",
+        logging: false,
+        width: bounds.width,
+        height: bounds.height,
+        windowWidth: Math.max(document.documentElement.clientWidth, page.scrollWidth),
+        windowHeight: Math.max(document.documentElement.clientHeight, page.scrollHeight),
+      });
+      if (canvas.width === 0 || canvas.height === 0) throw new Error("Canvas is empty!");
+
+      const width = bounds.width * 25.4 / 96;
+      const height = bounds.height * 25.4 / 96;
+      const orientation = width > height ? "landscape" : "portrait";
+      if (!pdf) {
+        pdf = new jsPDF({ orientation, unit: "mm", format: [width, height] });
+      } else {
+        pdf.addPage([width, height], orientation);
+      }
+      pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, width, height);
     }
-    
-    // Convert to PDF
-    const imgData = canvas.toDataURL("image/jpeg", 0.95);
-    
-    // A4 dimensions in mm
-    const pdfWidth = 210;
-    const pdfHeight = 297;
-    
-    // Calculate image dimensions to fit A4
-    const imgWidth = pdfWidth;
-    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-    
-    const pdf = new jsPDF({
-      orientation: imgHeight > pdfHeight ? "portrait" : "portrait",
-      unit: "mm",
-      format: "a4",
-    });
-    
-    let heightLeft = imgHeight;
-    let position = 0;
-    
-    // Add first page
-    pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-    heightLeft -= pdfHeight;
-    
-    // Add additional pages if needed
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pdfHeight;
-    }
+
+    if (!pdf) throw new Error("No PDF pages generated");
     
     console.log("✅ PDF created, saving...");
     pdf.save(fileName);
