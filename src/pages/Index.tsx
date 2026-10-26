@@ -58,15 +58,37 @@ const Index = () => {
     if (!excelFile || !wordFile || validatedExcelFile !== excelFile || validatedWordFile !== wordFile) return;
     const previous = lastScrolledFiles.current;
     if (previous?.[0] === excelFile && previous?.[1] === wordFile) return;
-    const frame = requestAnimationFrame(() => {
+    let frame = 0;
+    const cancelScroll = () => cancelAnimationFrame(frame);
+    const timer = window.setTimeout(() => {
       if (!nextStepRef.current) return;
       lastScrolledFiles.current = [excelFile, wordFile];
-      nextStepRef.current.scrollIntoView({
-        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
-        block: "start",
-      });
-    });
-    return () => cancelAnimationFrame(frame);
+      const start = window.scrollY;
+      const target = Math.max(0, Math.min(
+        start + nextStepRef.current.getBoundingClientRect().top - 24,
+        document.documentElement.scrollHeight - window.innerHeight
+      ));
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        window.scrollTo({ top: target, behavior: "instant" });
+        return;
+      }
+      const started = performance.now();
+      const animate = (now: number) => {
+        const progress = Math.min((now - started) / 1200, 1);
+        const eased = progress * progress * (3 - 2 * progress);
+        window.scrollTo({ top: start + (target - start) * eased, behavior: "instant" });
+        if (progress < 1) frame = requestAnimationFrame(animate);
+      };
+      frame = requestAnimationFrame(animate);
+    }, 350);
+    window.addEventListener("wheel", cancelScroll, { passive: true });
+    window.addEventListener("touchstart", cancelScroll, { passive: true });
+    return () => {
+      clearTimeout(timer);
+      cancelAnimationFrame(frame);
+      window.removeEventListener("wheel", cancelScroll);
+      window.removeEventListener("touchstart", cancelScroll);
+    };
   }, [excelFile, wordFile, validatedExcelFile, validatedWordFile]);
 
   const parseExcelFile = async (file: File) => {
@@ -193,18 +215,21 @@ const Index = () => {
       const doc = new Docxtemplater(zip, {
         paragraphLoop: true,
         linebreaks: true,
+        delimiters: { start: "<<", end: ">>" },
       });
 
       // Extract all placeholders from the template
       const fullText = doc.getFullText();
       const placeholderRegex = /<<([^>]+)>>/g;
       const matches = fullText.match(placeholderRegex);
+      // A readable Word template is valid even without body placeholders
+      // (for example, when fields are in a header).
+      setValidatedWordFile(file);
       
       if (matches) {
         const placeholders = matches.map((match) => match.replace(/<<|>>/g, ""));
         const uniquePlaceholders = [...new Set(placeholders)];
         setWordPlaceholders(uniquePlaceholders);
-        setValidatedWordFile(file);
         toast.success(`Found ${uniquePlaceholders.length} placeholders in template`);
       } else {
         toast.warning("No placeholders (<<field>>) found in Word template");
