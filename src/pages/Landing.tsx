@@ -10,7 +10,7 @@ import type { User } from "@supabase/supabase-js";
 
 const features = [
   { icon: Upload, title: "העלה קבצים", text: "העלו תבנית Word עם שדות מותאמים וקובץ Excel עם הנתונים.  " },
-  { icon: MousePointerClick, title: "בחר רשומות", text: "בחר את השמות שעבורם תרצה מסמכים — או מלא את השדות ידנית." },
+  { icon: MousePointerClick, title: "בחר רשומות", text: "בחר את השמות שעבורם תרצה מסמכים, או מלא את השדות ידנית." },
   { icon: FileDown, title: "הורד PDF או וורד", text: "קבל מסמכים מוכנים ששומרים בדיוק על העיצוב המקורי של התבנית." },
 ];
 
