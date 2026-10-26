@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
 const features = [
-  { icon: Upload, title: "העלה קבצים", text: "העלה קובץ אקסל עם הנתונים ותבנית וורד עם שדות כמו <<שם מלא>>." },
+  { icon: Upload, title: "העלה קבצים", text: "\n" },
   { icon: MousePointerClick, title: "בחר רשומות", text: "בחר את השמות שעבורם תרצה מסמכים — או מלא את השדות ידנית." },
   { icon: FileDown, title: "הורד PDF או וורד", text: "קבל מסמכים מוכנים ששומרים בדיוק על העיצוב המקורי של התבנית." },
 ];
@@ -76,7 +76,7 @@ const Landing = () => {
           </motion.h1>
           <motion.p custom={2} initial="hidden" animate="show" variants={fadeUp}
             className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            העלה טבלת אקסל ותבנית וורד — ואנחנו נמלא כל מסמך אוטומטית ונייצא PDF שנראה בדיוק כמו המקור.
+            מייצר מסמכים מהתבניות שלכם.
           </motion.p>
           <motion.div custom={3} initial="hidden" animate="show" variants={fadeUp}
             className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
