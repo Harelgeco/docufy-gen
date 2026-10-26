@@ -139,7 +139,7 @@ export const DocumentPreview = ({
     };
 
     renderPreview();
-  }, [wordFile, selectedName, excelData, nameColumn]);
+  }, [wordFile, selectedName, excelData, nameColumn, language]);
 
   return (
     <Card className="p-6 h-full">
