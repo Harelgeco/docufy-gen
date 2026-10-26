@@ -51,7 +51,7 @@ export const AuthDialog = ({ open, mode, onOpenChange, onModeChange }: Props) =>
         onOpenChange(false);
       }
     } else {
-      const { error } = await supabase.auth.signInWithPassword(parsed.data);
+      const { error } = await supabase.auth.signInWithPassword({ email: parsed.data.email, password: parsed.data.password });
       if (error) toast.error("אימייל או סיסמה שגויים");
       else {
         toast.success("התחברת בהצלחה");
