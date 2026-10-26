@@ -147,12 +147,8 @@ const Index = () => {
     console.log("First row data:", excelData[0]);
     
     const extractedNames = excelData
-      .map((row: any) => {
-        const value = row[columnName];
-        console.log(`Row value for "${columnName}":`, value);
-        return value;
-      })
-      .filter((name: string) => name && name.trim() !== "");
+      .map((row: any) => String(row[columnName] ?? "").trim())
+      .filter((name: string) => name !== "");
     
     console.log("Extracted names:", extractedNames.slice(0, 5));
     
