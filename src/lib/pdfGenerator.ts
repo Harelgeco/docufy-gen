@@ -78,6 +78,14 @@ export class PDFGenerator {
       renderHeaders: true,
       renderFooters: true,
     });
+
+    // Preview chrome is not template content: never include its gray backdrop
+    // or page shadows in the PDF. Keep all document elements untouched.
+    const wrapper = this.container.querySelector<HTMLElement>(".docx-wrapper-wrapper");
+    if (wrapper) wrapper.style.background = "transparent";
+    this.container.querySelectorAll<HTMLElement>(".docx-wrapper-wrapper > section.docx-wrapper").forEach((page) => {
+      page.style.boxShadow = "none";
+    });
     
     console.log("✅ DOCX rendered, container HTML length:", this.container.innerHTML.length);
     console.log("Container children:", this.container.children.length);
