@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Shield, ArrowRight } from "lucide-react";
 
-type Row = { id: string; email: string | null; created_at: string; isAdmin: boolean };
+type Tier = "free" | "pro" | "enterprise";
+type Row = { id: string; email: string | null; created_at: string; tier: Tier; isAdmin: boolean };
 
 const Admin = () => {
   const [state, setState] = useState<"loading" | "denied" | "ok">("loading");
@@ -20,7 +21,7 @@ const Admin = () => {
     const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" });
     if (!isAdmin) return setState("denied");
     const [{ data: profiles }, { data: roles }] = await Promise.all([
-      supabase.from("profiles").select("id,email,created_at").order("created_at", { ascending: false }),
+      supabase.from("profiles").select("id,email,created_at,tier").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("user_id,role").eq("role", "admin"),
     ]);
     const admins = new Set((roles ?? []).map((r) => r.user_id));
@@ -36,6 +37,12 @@ const Admin = () => {
       : await supabase.from("user_roles").insert({ user_id: r.id, role: "admin" });
     if (error) toast.error("הפעולה נכשלה");
     else { toast.success("ההרשאה עודכנה"); load(); }
+  };
+
+  const setTier = async (r: Row, tier: Tier) => {
+    const { error } = await supabase.from("profiles").update({ tier }).eq("id", r.id);
+    if (error) toast.error("הפעולה נכשלה");
+    else { toast.success("המסלול עודכן"); load(); }
   };
 
   if (state === "loading") return <div className="p-10 text-center text-muted-foreground" dir="rtl">טוען...</div>;
@@ -58,13 +65,18 @@ const Admin = () => {
         <div className="rounded-xl border border-border bg-card overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-muted text-muted-foreground">
-              <tr><th className="p-3 text-right">אימייל</th><th className="p-3 text-right">נרשם</th><th className="p-3 text-right">תפקיד</th><th className="p-3" /></tr>
+              <tr><th className="p-3 text-right">אימייל</th><th className="p-3 text-right">נרשם</th><th className="p-3 text-right">מסלול</th><th className="p-3 text-right">תפקיד</th><th className="p-3" /></tr>
             </thead>
             <tbody>
               {rows.map((r) => (
                 <tr key={r.id} className="border-t border-border">
                   <td className="p-3" dir="ltr" style={{ textAlign: "right" }}>{r.email}</td>
                   <td className="p-3">{new Date(r.created_at).toLocaleDateString("he-IL")}</td>
+                  <td className="p-3">
+                    <select className="rounded-md border border-input bg-background px-2 py-1" value={r.tier} onChange={(e) => setTier(r, e.target.value as Tier)}>
+                      <option value="free">Free</option><option value="pro">Pro</option><option value="enterprise">Enterprise</option>
+                    </select>
+                  </td>
                   <td className="p-3"><Badge variant={r.isAdmin ? "default" : "secondary"}>{r.isAdmin ? "מנהל" : "משתמש"}</Badge></td>
                   <td className="p-3 text-left">
                     {r.id !== me && (
@@ -75,7 +87,7 @@ const Admin = () => {
                   </td>
                 </tr>
               ))}
-              {rows.length === 0 && <tr><td colSpan={4} className="p-6 text-center text-muted-foreground">אין משתמשים עדיין</td></tr>}
+              {rows.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-muted-foreground">אין משתמשים עדיין</td></tr>}
             </tbody>
           </table>
         </div>
