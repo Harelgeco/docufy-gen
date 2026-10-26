@@ -39,7 +39,7 @@ export const prepareDocxForRender = async (blob: Blob): Promise<Blob> => {
       .filter((n) => /^word\/(document|header\d*|footer\d*|footnotes|endnotes)\.xml$/.test(n))
       .forEach((n) => {
         const xml = zip.file(n)?.asText();
-        if (xml && xml.includes("<w:sdt>")) zip.file(n, unwrapSdt(xml));
+        if (xml) zip.file(n, showPictureFills(unwrapSdt(xml)));
       });
     return zip.generate({
       type: "blob",
