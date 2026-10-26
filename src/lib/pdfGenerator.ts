@@ -94,6 +94,15 @@ export class PDFGenerator {
       // Keep "behind text" pictures behind the text when captured
       page.style.position = "relative";
       page.style.zIndex = "0";
+      // Floating pictures (e.g. page backgrounds) sit in zero-size holders;
+      // send them behind the text, like Word's "behind text" layout.
+      page.querySelectorAll<HTMLElement>("img").forEach((img) => {
+        const holder = img.parentElement;
+        if (holder && holder.style.width === "0px" && holder.style.height === "0px") {
+          holder.style.zIndex = "-1";
+          if (!holder.style.position) holder.style.position = "relative";
+        }
+      });
     });
     
     console.log("✅ DOCX rendered, container HTML length:", this.container.innerHTML.length);
