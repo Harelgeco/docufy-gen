@@ -1,6 +1,7 @@
 import { renderAsync } from "docx-preview";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { prepareDocxForRender } from "./docxRenderPrep";
 
 export interface PDFGeneratorOptions {
   docxBlob: Blob;
@@ -47,7 +48,8 @@ export class PDFGenerator {
       position: fixed;
       top: 0;
       left: 0;
-      width: 210mm;
+      width: max-content;
+      direction: ltr;
       background: white;
       padding: 0;
       box-sizing: border-box;
@@ -66,7 +68,7 @@ export class PDFGenerator {
   private async renderDocx(blob: Blob): Promise<void> {
     if (!this.container) throw new Error("No container");
     
-    await renderAsync(blob, this.container, undefined, {
+    await renderAsync(await prepareDocxForRender(blob), this.container, undefined, {
       className: "docx-wrapper",
       inWrapper: true,
       ignoreWidth: false,
@@ -89,6 +91,18 @@ export class PDFGenerator {
     this.container.querySelectorAll<HTMLElement>(".docx-wrapper-wrapper > section.docx-wrapper").forEach((page) => {
       page.style.boxShadow = "none";
       page.style.margin = "0";
+      // Keep "behind text" pictures behind the text when captured
+      page.style.position = "relative";
+      page.style.zIndex = "0";
+      // Floating pictures (e.g. page backgrounds) sit in zero-size holders;
+      // send them behind the text, like Word's "behind text" layout.
+      page.querySelectorAll<HTMLElement>("img").forEach((img) => {
+        const holder = img.parentElement;
+        if (holder && holder.style.width === "0px" && holder.style.height === "0px") {
+          holder.style.zIndex = "-1";
+          if (!holder.style.position) holder.style.position = "relative";
+        }
+      });
     });
     
     console.log("✅ DOCX rendered, container HTML length:", this.container.innerHTML.length);
