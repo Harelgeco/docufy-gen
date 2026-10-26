@@ -156,6 +156,7 @@ const ManualEntry = () => {
                 language={language}
                 images={images}
                 onImagesChange={setImages}
+                hasImagePlaceholder={hasImagePlaceholder}
               />
               <ManualExportOptions
                 disabled={!isFormValid}

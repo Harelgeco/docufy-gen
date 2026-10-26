@@ -14,6 +14,7 @@ interface ManualFieldsFormProps {
   language: Language;
   images: UploadedImage[];
   onImagesChange: (images: UploadedImage[]) => void;
+  hasImagePlaceholder?: boolean;
 }
 
 export const ManualFieldsForm = ({
@@ -24,6 +25,7 @@ export const ManualFieldsForm = ({
   language,
   images,
   onImagesChange,
+  hasImagePlaceholder = false,
 }: ManualFieldsFormProps) => {
   const t = translations[language];
 
@@ -99,7 +101,7 @@ export const ManualFieldsForm = ({
         ))}
 
         {/* ALWAYS show image upload section for {%תמונות} placeholders */}
-        {imageFields.length === 0 && (
+        {imageFields.length === 0 && hasImagePlaceholder && (
           <div className="space-y-2 pt-4 border-t">
             <Label className="text-sm font-medium flex items-center gap-2">
               <Image className="w-4 h-4" />
