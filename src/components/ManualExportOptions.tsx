@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, File, AlertCircle } from "lucide-react";
+import { FileText, Download, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
@@ -137,7 +137,7 @@ export const ManualExportOptions = ({
         const imageDataUrls = await Promise.all(
           images.map((img) => fileToBase64DataUrl(img.file))
         );
-        
+
         // Add first image for simple placeholder
         // Template should use: %<<תמונות>> or %<<image>>
         if (imageDataUrls[0]) {
@@ -146,7 +146,7 @@ export const ManualExportOptions = ({
           templateData["images"] = imageDataUrls[0];
           templateData["image"] = imageDataUrls[0];
         }
-        
+
         // Add numbered images for multiple placeholders
         // Template should use: %<<תמונה1>>, %<<תמונה2>>, etc.
         imageDataUrls.forEach((dataUrl, index) => {
@@ -200,13 +200,13 @@ export const ManualExportOptions = ({
 
       const pdfGenerator = new PDFGenerator();
       const fileName = `document_${new Date().toISOString().split("T")[0]}.pdf`;
-      
+
       await pdfGenerator.generate({
         docxBlob: blob,
         fileName,
         onProgress: (status) => console.log("PDF Generation:", status),
       });
-      
+
       toast.success(
         language === "he" ? "ה-PDF הורד בהצלחה" : "PDF downloaded successfully"
       );
@@ -243,25 +243,26 @@ export const ManualExportOptions = ({
         </Alert>
       )}
 
-      <div className="space-y-3">
-        <Button
-          className="w-full"
-          variant="outline"
-          onClick={handleDownloadWord}
-          disabled={disabled || generating}
-        >
-          <FileText className="w-4 h-4 mr-2" />
-          {t.downloadWord}
-        </Button>
-        <Button
-          className="w-full"
-          onClick={handleDownloadPDF}
-          disabled={disabled || generating}
-        >
-          <File className="w-4 h-4 mr-2" />
-          {t.downloadPDF}
-        </Button>
-      </div>
+      {/* Main action: one big, unmistakable button */}
+      <Button
+        className="w-full h-14 text-base font-bold gap-3 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.99] transition-all"
+        onClick={handleDownloadPDF}
+        disabled={disabled || generating}
+      >
+        <Download className="h-5 w-5 shrink-0" />
+        {t.issuePdf}
+      </Button>
+
+      {/* Secondary action */}
+      <Button
+        className="w-full h-11 mt-3 text-sm gap-2"
+        variant="outline"
+        onClick={handleDownloadWord}
+        disabled={disabled || generating}
+      >
+        <FileText className="h-4 w-4 shrink-0" />
+        {t.issueWord}
+      </Button>
     </Card>
   );
 };

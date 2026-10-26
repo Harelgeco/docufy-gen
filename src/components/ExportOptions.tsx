@@ -30,7 +30,7 @@ const normalizeKey = (s: string) =>
 
 const buildTemplateData = (row: Record<string, string>, language: "he" | "en") => {
   const mapped: Record<string, string> = {};
-  
+
   // Add current date as <<תאריך נוכחי>> with selected language
   const locale = language === "he" ? "he-IL" : "en-US";
   const currentDate = new Date().toLocaleDateString(locale, {
@@ -39,7 +39,7 @@ const buildTemplateData = (row: Record<string, string>, language: "he" | "en") =
     day: '2-digit'
   });
   for (const k of ["תאריך נוכחי", "תאריך היום", "date", "today", "current date"]) mapped[k] = currentDate;
-  
+
   for (const [key, value] of Object.entries(row)) {
     const v = value ?? "";
     mapped[key] = v;
@@ -95,7 +95,7 @@ export const ExportOptions = ({
           });
 
           const fileName = `${name.replace(/[^a-zA-Z0-9\u0590-\u05FF]/g, "_")}.docx`;
-          
+
           // Download the DOCX file directly
           saveAs(outputBlob, fileName);
 
@@ -179,21 +179,33 @@ export const ExportOptions = ({
   return (
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-4 text-foreground">{t.exportOptions}</h3>
-      <div className="space-y-3">
-        <Button className="w-full justify-start" disabled={disabled} onClick={generateDocuments}>
-          <FileText className="mr-2 h-4 w-4" />
-          {t.downloadWord}
-        </Button>
-        <Button className="w-full justify-start" disabled={disabled} onClick={generatePDFs} variant="outline">
-          <Download className="mr-2 h-4 w-4" />
-          {t.downloadPDF}
-        </Button>
-      </div>
-      {selectedCount > 0 && (
-        <p className="mt-4 text-sm text-center text-muted-foreground">
-          {selectedCount} {selectedCount > 1 ? t.documents : t.document} {t.documentsSelected}
-        </p>
-      )}
+
+      {/* Main action: one big, unmistakable button */}
+      <Button
+        className="w-full h-14 text-base font-bold gap-3 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.99] transition-all"
+        disabled={disabled}
+        onClick={generatePDFs}
+      >
+        <Download className="h-5 w-5 shrink-0" />
+        {t.issuePdf}
+      </Button>
+
+      {/* Secondary action */}
+      <Button
+        className="w-full h-11 mt-3 text-sm gap-2"
+        variant="outline"
+        disabled={disabled}
+        onClick={generateDocuments}
+      >
+        <FileText className="h-4 w-4 shrink-0" />
+        {t.issueWord}
+      </Button>
+
+      <p className="mt-4 text-sm text-center text-muted-foreground">
+        {disabled
+          ? t.selectToIssue
+          : `${selectedCount} ${selectedCount > 1 ? t.documents : t.document} ${t.documentsSelected}`}
+      </p>
     </Card>
   );
 };
