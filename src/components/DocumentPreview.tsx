@@ -1,5 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import { renderAsync } from "docx-preview";
@@ -52,9 +58,14 @@ export const DocumentPreview = ({
   const t = translations[language];
   const containerRef = useRef<HTMLDivElement>(null);
   const previewDataRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+
+  const hasPreview = Boolean(templateName && selectedName);
 
   useEffect(() => {
     const renderPreview = async () => {
+      // Only render when the panel is actually open (it is closed by default).
+      if (!open) return;
       if (!wordFile || !selectedName || !excelData || !nameColumn || !containerRef.current || !previewDataRef.current) {
         return;
       }
@@ -139,38 +150,61 @@ export const DocumentPreview = ({
     };
 
     renderPreview();
-  }, [wordFile, selectedName, excelData, nameColumn, language]);
+  }, [open, wordFile, selectedName, excelData, nameColumn, language]);
+
+  const subtitle = !hasPreview
+    ? t.uploadToPreview
+    : open
+      ? `${templateName} · ${selectedName}`
+      : t.previewExpandHint;
 
   return (
-    <Card className="p-6 h-full">
-      <h3 className="text-lg font-semibold mb-4 text-foreground">{t.documentPreview}</h3>
-      {templateName && selectedName ? (
-        <div className="space-y-4">
-          <div
-            ref={containerRef}
-            className="border rounded-lg overflow-auto max-h-[600px] bg-white p-4"
-            style={{ minHeight: "400px" }}
+    <Card className="h-full p-0 overflow-hidden">
+      <Collapsible open={open} onOpenChange={setOpen}>
+        <CollapsibleTrigger
+          disabled={!hasPreview}
+          className={`flex w-full items-center justify-between gap-4 p-6 text-start transition-colors ${
+            hasPreview ? "hover:bg-muted/60 cursor-pointer" : "cursor-default"
+          }`}
+        >
+          <div className="min-w-0">
+            <span className="block text-lg font-semibold text-foreground">
+              {t.documentPreview}
+            </span>
+            <span className="block truncate text-sm text-muted-foreground">{subtitle}</span>
+          </div>
+          <ChevronDown
+            aria-hidden
+            className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-300 ${
+              open ? "rotate-180" : ""
+            }`}
           />
-          <div className="space-y-2">
-            <div className="p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground">{t.template}</p>
-              <p className="font-medium text-foreground">{templateName}</p>
-            </div>
-            <div className="p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground">{t.selectedName}</p>
-              <p className="font-medium text-foreground">{selectedName}</p>
-            </div>
-            <div className="p-4 border-2 border-border rounded-lg">
-              <p className="text-sm font-semibold mb-3 text-foreground">{t.dataToFill}</p>
-              <div ref={previewDataRef} className="max-h-[300px] overflow-y-auto" />
+        </CollapsibleTrigger>
+
+        <CollapsibleContent>
+          <div className="px-6 pb-6 space-y-4">
+            <div
+              ref={containerRef}
+              className="border rounded-lg overflow-auto max-h-[600px] bg-white p-4"
+              style={{ minHeight: "400px" }}
+            />
+            <div className="space-y-2">
+              <div className="p-4 bg-muted rounded-lg">
+                <p className="text-sm text-muted-foreground">{t.template}</p>
+                <p className="font-medium text-foreground">{templateName}</p>
+              </div>
+              <div className="p-4 bg-muted rounded-lg">
+                <p className="text-sm text-muted-foreground">{t.selectedName}</p>
+                <p className="font-medium text-foreground">{selectedName}</p>
+              </div>
+              <div className="p-4 border-2 border-border rounded-lg">
+                <p className="text-sm font-semibold mb-3 text-foreground">{t.dataToFill}</p>
+                <div ref={previewDataRef} className="max-h-[300px] overflow-y-auto" />
+              </div>
             </div>
           </div>
-        </div>
-      ) : (
-        <div className="flex items-center justify-center h-[400px] bg-muted rounded-lg">
-          <p className="text-muted-foreground">{t.uploadToPreview}</p>
-        </div>
-      )}
+        </CollapsibleContent>
+      </Collapsible>
     </Card>
   );
 };

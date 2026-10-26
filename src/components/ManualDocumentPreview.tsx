@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import { renderAsync } from "docx-preview";
@@ -32,6 +38,7 @@ export const ManualDocumentPreview = ({
   const t = translations[language];
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
 
   // Convert base64 data URL to ArrayBuffer for docxtemplater-image-module-free
   const base64DataURLToArrayBuffer = (dataURL: string): ArrayBuffer | false => {
@@ -61,6 +68,8 @@ export const ManualDocumentPreview = ({
 
   useEffect(() => {
     const renderPreview = async () => {
+      // Only render when the panel is actually open (it is closed by default).
+      if (!open) return;
       if (!wordFile || !containerRef.current) return;
 
       try {
@@ -162,40 +171,59 @@ export const ManualDocumentPreview = ({
     };
 
     renderPreview();
-  }, [wordFile, fieldValues, language, images]);
+  }, [open, wordFile, fieldValues, language, images]);
 
   return (
-    <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4 text-foreground">
-        {t.documentPreview}
-      </h3>
+    <Card className="p-0 overflow-hidden">
+      <Collapsible open={open} onOpenChange={setOpen}>
+        <CollapsibleTrigger className="flex w-full items-center justify-between gap-4 p-6 text-start transition-colors hover:bg-muted/60 cursor-pointer">
+          <div className="min-w-0">
+            <span className="block text-lg font-semibold text-foreground">
+              {t.documentPreview}
+            </span>
+            <span className="block truncate text-sm text-muted-foreground">
+              {open ? t.previewCollapseHint : t.previewExpandHint}
+            </span>
+          </div>
+          <ChevronDown
+            aria-hidden
+            className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-300 ${
+              open ? "rotate-180" : ""
+            }`}
+          />
+        </CollapsibleTrigger>
 
-      {error ? (
-        <div className="text-destructive text-center py-8">{error}</div>
-      ) : (
-        <div
-          ref={containerRef}
-          className="border rounded-lg overflow-auto max-h-[70vh] bg-white"
-          style={{ minHeight: "400px" }}
-        />
-      )}
+        <CollapsibleContent>
+          <div className="px-6 pb-6">
+            {error ? (
+              <div className="text-destructive text-center py-8">{error}</div>
+            ) : (
+              <div
+                ref={containerRef}
+                className="border rounded-lg overflow-auto max-h-[70vh] bg-white"
+                style={{ minHeight: "400px" }}
+              />
+            )}
 
-      {/* Show filled values */}
-      <div className="mt-4 pt-4 border-t">
-        <h4 className="text-sm font-medium mb-2 text-muted-foreground">
-          {t.dataToFill}
-        </h4>
-        <div className="space-y-1">
-          {Object.entries(fieldValues).map(([key, value]) => (
-            <div key={key} className="flex justify-between text-sm">
-              <span className="text-muted-foreground">{key}:</span>
-              <span className="font-medium text-foreground">
-                {value || t.empty}
-              </span>
+            {/* Show filled values */}
+            <div className="mt-4 pt-4 border-t">
+              <h4 className="text-sm font-medium mb-2 text-muted-foreground">
+                {t.dataToFill}
+              </h4>
+              <div className="space-y-1">
+                {Object.entries(fieldValues).map(([key, value]) => (
+                  <div key={key} className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{key}:</span>
+                    <span className="font-medium text-foreground">
+                      {value || t.empty}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     </Card>
   );
 };
