@@ -34,10 +34,10 @@ export const Header = ({ language, onLanguageChange }: HeaderProps) => {
             {/* Navigation */}
             <nav className="flex items-center gap-1">
               <Link
-                to="/"
+                to="/excel"
                 className={cn(
                   "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                  location.pathname === "/"
+                  location.pathname === "/excel"
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
