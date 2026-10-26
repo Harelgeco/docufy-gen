@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
 const features = [
-  { icon: Upload, title: "העלה קבצים", text: "\n" },
+  { icon: Upload, title: "העלה קבצים", text: "העלו קובץ Excel עם הנתונים ותבנית Word עם שדות מסומנים — שם מלא, מספר זהות, תאריך או כל פרט אחר." },
   { icon: MousePointerClick, title: "בחר רשומות", text: "בחר את השמות שעבורם תרצה מסמכים — או מלא את השדות ידנית." },
   { icon: FileDown, title: "הורד PDF או וורד", text: "קבל מסמכים מוכנים ששומרים בדיוק על העיצוב המקורי של התבנית." },
 ];
