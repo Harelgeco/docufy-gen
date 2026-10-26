@@ -43,7 +43,10 @@ export const translations = {
     searchNames: "חפש שמות...",
     
     // Export Options
-    exportOptions: "אפשרויות ייצוא",
+    exportOptions: "הנפקת מסמכים",
+    issuePdf: "הנפק PDF",
+    issueWord: "הורד קובץ Word",
+    selectToIssue: "בחר שם אחד או יותר כדי להנפיק",
     downloadWord: "הורד כקובץ וורד",
     downloadPDF: "הורד כקובץ PDF",
     documentsSelected: "מסמכים נבחרו",
@@ -52,6 +55,8 @@ export const translations = {
     
     // Document Preview
     documentPreview: "תצוגה מקדימה של מסמך",
+    previewExpandHint: "לחץ כאן כדי לפתוח את התצוגה",
+    previewCollapseHint: "לחץ כאן כדי לסגור את התצוגה",
     template: "תבנית",
     selectedName: "שם נבחר",
     dataToFill: "נתונים שימולאו:",
@@ -113,7 +118,10 @@ export const translations = {
     searchNames: "Search names...",
     
     // Export Options
-    exportOptions: "Export Options",
+    exportOptions: "Issue documents",
+    issuePdf: "Issue PDF",
+    issueWord: "Download Word file",
+    selectToIssue: "Select at least one name to issue",
     downloadWord: "Download as Word Document(s)",
     downloadPDF: "Download as PDF(s)",
     documentsSelected: "selected",
@@ -122,6 +130,8 @@ export const translations = {
     
     // Document Preview
     documentPreview: "Document Preview",
+    previewExpandHint: "Click here to open the preview",
+    previewCollapseHint: "Click here to close the preview",
     template: "Template",
     selectedName: "Selected Name",
     dataToFill: "Data that will be filled:",
