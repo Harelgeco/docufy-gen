@@ -62,22 +62,32 @@ export const ImageUploader = ({
     <div className="space-y-4">
       {/* Upload area */}
       <div
-        className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
+        className={`border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 cursor-pointer ${
           dragOver
-            ? "border-primary bg-primary/5"
+            ? "border-primary bg-primary/10 scale-[1.02] shadow-lg ring-4 ring-primary/20"
             : "border-muted-foreground/25 hover:border-primary/50"
         }`}
+        onDragEnter={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
         onDragOver={(e) => {
           e.preventDefault();
           setDragOver(true);
         }}
-        onDragLeave={() => setDragOver(false)}
+        onDragLeave={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOver(false);
+        }}
         onDrop={handleDrop}
         onClick={() => document.getElementById("image-input")?.click()}
       >
-        <ImagePlus className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">
-          {language === "he"
+        <ImagePlus className={`w-8 h-8 mx-auto mb-2 ${dragOver ? "text-primary animate-bounce" : "text-muted-foreground"}`} />
+        <p className={`text-sm ${dragOver ? "text-primary font-medium" : "text-muted-foreground"}`}>
+          {dragOver
+            ? language === "he"
+              ? "שחרר את התמונות כאן"
+              : "Drop images here"
+            : language === "he"
             ? "גרור תמונות לכאן או לחץ לבחירה"
             : "Drag images here or click to select"}
         </p>

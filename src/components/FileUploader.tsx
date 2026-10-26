@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Upload } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { translations, Language } from "@/lib/translations";
@@ -20,8 +21,12 @@ export const FileUploader = ({
   language,
 }: FileUploaderProps) => {
   const t = translations[language];
+  const [dragDepth, setDragDepth] = useState(0);
+  const isDragging = dragDepth > 0;
+
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
+    setDragDepth(0);
     const file = e.dataTransfer.files[0];
     if (file) onFileSelect(file);
   };
@@ -32,18 +37,40 @@ export const FileUploader = ({
   };
 
   return (
-    <Card className="p-8 border-2 border-dashed border-border hover:border-primary transition-colors">
-      <div
-        onDrop={handleDrop}
-        onDragOver={(e) => e.preventDefault()}
-        className="flex flex-col items-center justify-center space-y-4"
-      >
-        <div className="p-4 rounded-full bg-muted">
-          <Upload className="w-8 h-8 text-muted-foreground" />
+    <Card
+      onDragEnter={(e) => {
+        e.preventDefault();
+        setDragDepth((d) => d + 1);
+      }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "copy";
+      }}
+      onDragLeave={() => setDragDepth((d) => Math.max(0, d - 1))}
+      onDrop={handleDrop}
+      className={`p-8 border-2 border-dashed transition-all duration-200 ${
+        isDragging
+          ? "border-primary bg-primary/10 scale-[1.02] shadow-lg ring-4 ring-primary/20"
+          : "border-border hover:border-primary"
+      }`}
+    >
+      <div className="flex flex-col items-center justify-center space-y-4">
+        <div
+          className={`p-4 rounded-full transition-colors ${
+            isDragging ? "bg-primary text-primary-foreground animate-bounce" : "bg-muted text-muted-foreground"
+          }`}
+        >
+          <Upload className="w-8 h-8" />
         </div>
         <div className="text-center space-y-2">
           <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-          <p className="text-sm text-muted-foreground">{description}</p>
+          <p className={`text-sm ${isDragging ? "text-primary font-medium" : "text-muted-foreground"}`}>
+            {isDragging
+              ? language === "he"
+                ? "שחרר את הקובץ כאן"
+                : "Drop the file here"
+              : description}
+          </p>
         </div>
         <label className="cursor-pointer">
           <input
