@@ -204,7 +204,9 @@ export const ExportOptions = ({
       <p className="mt-4 text-sm text-center text-muted-foreground">
         {disabled
           ? t.selectToIssue
-          : `${selectedCount} ${selectedCount > 1 ? t.documents : t.document} ${t.documentsSelected}`}
+          : selectedCount === 1
+            ? t.oneDocumentSelected
+            : `${selectedCount} ${t.documents} ${t.documentsSelected}`}
       </p>
     </Card>
   );

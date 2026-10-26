@@ -49,7 +49,8 @@ export const translations = {
     selectToIssue: "בחר שם אחד או יותר כדי להנפיק",
     downloadWord: "הורד כקובץ וורד",
     downloadPDF: "הורד כקובץ PDF",
-    documentsSelected: "מסמכים נבחרו",
+    documentsSelected: "נבחרו",
+    oneDocumentSelected: "מסמך אחד נבחר",
     document: "מסמך",
     documents: "מסמכים",
     
@@ -125,6 +126,7 @@ export const translations = {
     downloadWord: "Download as Word Document(s)",
     downloadPDF: "Download as PDF(s)",
     documentsSelected: "selected",
+    oneDocumentSelected: "1 document selected",
     document: "document",
     documents: "documents",
     
