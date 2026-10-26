@@ -60,7 +60,7 @@ const fixRtlTables = (xml: string) => {
 // The renderer ignores Word's "flip horizontal" on pictures. Mirror the picture file itself.
 const mirrorImage = async (bytes: Uint8Array, mime: string): Promise<Uint8Array | null> => {
   try {
-    const bmp = await createImageBitmap(new Blob([bytes], { type: mime }));
+    const bmp = await createImageBitmap(new Blob([bytes as BlobPart], { type: mime }));
     const canvas = document.createElement("canvas");
     canvas.width = bmp.width;
     canvas.height = bmp.height;
