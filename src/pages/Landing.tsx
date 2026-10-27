@@ -81,7 +81,7 @@ const Landing = () => {
         <div className="container mx-auto px-4 pt-4 pb-20 md:pt-6 md:pb-28 text-center max-w-4xl">
           <motion.h1 custom={0} initial="hidden" animate="show" variants={fadeUp}
             className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
-            מאות מסמכים מותאמים.<br /><span className="text-primary">בלחיצה אחת.</span>
+            <span className="text-[0.94em]">מאות מסמכים מותאמים.</span><br /><span className="text-primary">בלחיצה אחת.</span>
           </motion.h1>
           <motion.p custom={1} initial="hidden" animate="show" variants={fadeUp}
             className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
