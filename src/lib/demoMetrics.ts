@@ -1,1 +1,0 @@
-export const repeatedEdits = (people: number, fields: number) => people * fields;
