@@ -68,7 +68,7 @@ const Landing = () => {
         <div className="container mx-auto px-4 py-24 md:py-36 text-center max-w-4xl">
           <motion.div custom={0} initial="hidden" animate="show" variants={fadeUp}
             className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-sm text-muted-foreground mb-8">
-            <Sparkles className="w-4 h-4 text-primary" /> אקסל + וורד = מסמכים מוכנים
+            <Sparkles className="w-4 h-4 text-primary" />
           </motion.div>
           <motion.h1 custom={1} initial="hidden" animate="show" variants={fadeUp}
             className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
