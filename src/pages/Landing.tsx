@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FileText, Upload, MousePointerClick, FileDown, Play, ArrowLeft, Sparkles } from "lucide-react";
+import { FileText, Upload, MousePointerClick, FileDown, Play, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { AuthDialog, AuthMode } from "@/components/AuthDialog";
@@ -65,11 +65,7 @@ const Landing = () => {
 
       <section className="relative">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.12),transparent_60%)]" />
-        <div className="container mx-auto px-4 py-24 md:py-36 text-center max-w-4xl">
-          <motion.div custom={0} initial="hidden" animate="show" variants={fadeUp}
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-sm text-muted-foreground mb-8">
-            <Sparkles className="w-4 h-4 text-primary" />
-          </motion.div>
+        <div className="container mx-auto px-4 pt-12 pb-24 md:pt-16 md:pb-32 text-center max-w-4xl">
           <motion.h1 custom={1} initial="hidden" animate="show" variants={fadeUp}
             className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
             מאות מסמכים מותאמים.<br /><span className="text-primary">בלחיצה אחת.</span>
