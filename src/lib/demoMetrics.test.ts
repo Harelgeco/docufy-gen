@@ -1,11 +1,12 @@
-import { describe, expect, test } from "bun:test";
+import { describe, it as test } from "node:test";
+import { strict as assert } from "node:assert";
 import { repeatedEdits } from "./demoMetrics";
 
 describe("manual document repetition", () => {
   test("30 people with 10 changed fields require 300 field replacements", () => {
-    expect(repeatedEdits(30, 10)).toBe(300);
+    assert.equal(repeatedEdits(30, 10), 300);
   });
   test("changing the number of people changes the replacement count", () => {
-    expect(repeatedEdits(60, 10)).toBe(600);
+    assert.equal(repeatedEdits(60, 10), 600);
   });
 });

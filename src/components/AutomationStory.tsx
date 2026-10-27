@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { ArrowLeft, Copy, FileText } from "lucide-react";
 import { AutomationDemo } from "@/components/AutomationDemo";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { repeatedEdits } from "@/lib/demoMetrics";
 
-export const AutomationStory = ({ onStart }: { onStart: () => void }) => {
+export const AutomationStory = ({ onStart, children }: { onStart: () => void; children?: ReactNode }) => {
   const [people, setPeople] = useState(30);
   const [fields, setFields] = useState(10);
 
@@ -22,6 +22,7 @@ export const AutomationStory = ({ onStart }: { onStart: () => void }) => {
         <p className="mt-3 text-xs text-muted-foreground">המחשה של התהליך, לא מדידת זמן הפקה. משך ההפקה תלוי בכמות המסמכים ובתבנית.</p>
       </div>
     </section>
+    {children}
     <section className="py-12 md:py-16">
       <div className="mx-auto grid max-w-6xl items-start gap-10 px-4 md:grid-cols-2">
         <div>

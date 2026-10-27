@@ -101,7 +101,7 @@ const Landing = () => {
         </div>
       </section>
 
-      <AutomationStory onStart={() => openAuth("signup")} />
+      <AutomationStory onStart={() => openAuth("signup")}>
 
       <section className="bg-muted/50 py-20 md:py-28">
         <div className="container mx-auto px-4">
@@ -143,6 +143,7 @@ const Landing = () => {
         </div>
       </section>
 
+      </AutomationStory>
       <footer className="py-10 text-center text-sm text-muted-foreground">© {new Date().getFullYear()} מחולל מסמכים</footer>
 
       <AuthDialog open={authOpen} mode={mode} onOpenChange={setAuthOpen} onModeChange={setMode} />
