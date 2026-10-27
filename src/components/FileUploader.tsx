@@ -48,7 +48,7 @@ export const FileUploader = ({
       }}
       onDragLeave={() => setDragDepth((d) => Math.max(0, d - 1))}
       onDrop={handleDrop}
-      className={`p-8 border-2 border-dashed transition-all duration-200 ${
+      className={`p-8 border border-solid transition-all duration-200 ${
         isDragging
           ? "border-primary bg-primary/10 scale-[1.02] shadow-lg ring-4 ring-primary/20"
           : "bg-dropzone border-dropzone-border hover:border-gold"
