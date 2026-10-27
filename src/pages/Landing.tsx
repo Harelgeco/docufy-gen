@@ -7,6 +7,8 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { AuthDialog, AuthMode } from "@/components/AuthDialog";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import heroVideo from "@/assets/hero-loop.mp4.asset.json";
+import { ProblemSolution } from "@/components/ProblemSolution";
 
 const features = [
   { icon: Upload, title: "העלה קבצים", text: "העלו תבנית Word עם שדות מותאמים וקובץ Excel עם הנתונים.  " },
@@ -76,8 +78,18 @@ const Landing = () => {
         </div>
       </nav>
 
-      <section className="relative">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.12),transparent_60%)]" />
+      <section className="relative isolate overflow-hidden">
+        <video
+          className="absolute inset-0 -z-20 h-full w-full object-cover"
+          src={heroVideo.url}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0 -z-10 bg-background/80" />
         <div className="container mx-auto px-4 pt-4 pb-20 md:pt-6 md:pb-28 text-center max-w-4xl">
           <motion.h1 custom={0} initial="hidden" animate="show" variants={fadeUp}
             className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
@@ -98,6 +110,8 @@ const Landing = () => {
           </motion.div>
         </div>
       </section>
+
+      <ProblemSolution />
 
       <section className="bg-muted/50 py-20 md:py-28">
         <div className="container mx-auto px-4">
