@@ -28,6 +28,10 @@ const Admin = () => {
   const [pending, setPending] = useState<Pending>(null);
   const [busy, setBusy] = useState(false);
 
+  useEffect(() => {
+    applyDocumentDirection("he");
+  }, []);
+
   const load = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return setState("denied");
