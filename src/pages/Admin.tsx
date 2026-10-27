@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { Shield, ArrowRight, Ban, Trash2, UserCheck } from "lucide-react";
+import { applyDocumentDirection } from "@/lib/translations";
 
 type Tier = "free" | "pro" | "enterprise";
 type Row = {
@@ -26,6 +27,10 @@ const Admin = () => {
   const [rows, setRows] = useState<Row[]>([]);
   const [pending, setPending] = useState<Pending>(null);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    applyDocumentDirection("he");
+  }, []);
 
   const load = async () => {
     const { data: { user } } = await supabase.auth.getUser();

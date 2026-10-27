@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { AuthDialog, AuthMode } from "@/components/AuthDialog";
 import { supabase } from "@/integrations/supabase/client";
+import { applyDocumentDirection } from "@/lib/translations";
 import type { User } from "@supabase/supabase-js";
 import heroVideo from "@/assets/hero-loop.mp4.asset.json";
 import { ProblemSolution } from "@/components/ProblemSolution";
@@ -44,6 +45,7 @@ const Landing = () => {
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
+    applyDocumentDirection("he");
     const { data } = supabase.auth.onAuthStateChange((_e, s) => setUser(s?.user ?? null));
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
     return () => data.subscription.unsubscribe();

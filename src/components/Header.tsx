@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FileText, Languages, Check } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { translations, Language } from "@/lib/translations";
+import { translations, Language, applyDocumentDirection } from "@/lib/translations";
 import { cn } from "@/lib/utils";
 
 interface HeaderProps {
@@ -20,6 +20,10 @@ export const Header = ({ language, onLanguageChange }: HeaderProps) => {
   const t = translations[language];
   const location = useLocation();
   const [langOpen, setLangOpen] = useState(false);
+
+  useEffect(() => {
+    applyDocumentDirection(language);
+  }, [language]);
 
   return (
     <header className="border-b border-border bg-card">
