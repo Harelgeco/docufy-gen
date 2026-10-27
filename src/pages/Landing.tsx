@@ -93,7 +93,7 @@ const Landing = () => {
               התחל עכשיו <ArrowLeft className="w-4 h-4" />
             </Button>
             <Button size="lg" variant="outline" className={`h-12 px-8 text-base gap-2 ${cta}`} onClick={() => setDemoOpen(true)}>
-              <Play className="w-4 h-4" /> צפה בהדגמה
+              צפה בהדגמה <Play className="w-4 h-4 rotate-180" />
             </Button>
           </motion.div>
         </div>
