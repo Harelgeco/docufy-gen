@@ -143,7 +143,7 @@ const Landing = () => {
                   שלב {i + 1}
                   <ArrowLeft className="w-3.5 h-3.5 opacity-0 scale-50 transition-all duration-200 ease-out group-hover:opacity-100 group-hover:scale-100" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2 transition-colors duration-200 group-hover:text-primary">
+                <h3 className="text-xl font-semibold mb-2 text-primary">
                   {f.title}
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">{f.text}</p>
