@@ -1,3 +1,4 @@
+import { recordDocumentsIssued } from "@/lib/usage";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Download, FileText } from "lucide-react";
