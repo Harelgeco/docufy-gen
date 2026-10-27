@@ -80,7 +80,7 @@ const Landing = () => {
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.12),transparent_60%)]" />
         <div className="container mx-auto px-4 pt-4 pb-20 md:pt-6 md:pb-28 text-center max-w-4xl">
           <motion.h1 custom={0} initial="hidden" animate="show" variants={fadeUp}
-            className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
+            className="font-display text-4xl sm:text-5xl md:text-7xl font-extrabold leading-[1.12]">
             מאות מסמכים מותאמים.<br /><span className="text-primary">בלחיצה אחת.</span>
           </motion.h1>
           <motion.p custom={1} initial="hidden" animate="show" variants={fadeUp}
@@ -93,7 +93,7 @@ const Landing = () => {
               התחל עכשיו <ArrowLeft className="w-4 h-4" />
             </Button>
             <Button size="lg" variant="outline" className={`h-12 px-8 text-base gap-2 ${cta}`} onClick={() => setDemoOpen(true)}>
-              <Play className="w-4 h-4" /> צפה בהדגמה
+              צפה בהדגמה <ArrowLeft className="w-4 h-4" />
             </Button>
           </motion.div>
         </div>
@@ -103,7 +103,7 @@ const Landing = () => {
         <div className="container mx-auto px-4">
           <motion.div custom={0} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.6 }}
             variants={fadeUp} className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold">איך זה עובד</h2>
+            <h2 className="font-display text-3xl md:text-4xl font-bold">איך זה עובד</h2>
             <p className="mt-3 text-muted-foreground">שלושה צעדים פשוטים</p>
           </motion.div>
           <div className="grid gap-6 md:grid-cols-3 max-w-6xl mx-auto">

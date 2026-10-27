@@ -13,7 +13,12 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["Assistant", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["Frank Ruhl Libre", "Georgia", "serif"],
+      },
       colors: {
+
         gold: "hsl(var(--gold))",
         dropzone: { DEFAULT: "hsl(var(--dropzone))", border: "hsl(var(--dropzone-border))", icon: "hsl(var(--dropzone-icon))" },
         border: "hsl(var(--border))",
