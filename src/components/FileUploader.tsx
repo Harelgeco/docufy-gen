@@ -51,13 +51,13 @@ export const FileUploader = ({
       className={`p-8 border-2 border-dashed transition-all duration-200 ${
         isDragging
           ? "border-primary bg-primary/10 scale-[1.02] shadow-lg ring-4 ring-primary/20"
-          : "border-border hover:border-primary"
+          : "bg-dropzone border-dropzone-border hover:border-gold"
       }`}
     >
       <div className="flex flex-col items-center justify-center space-y-4">
         <div
           className={`p-4 rounded-full transition-colors ${
-            isDragging ? "bg-primary text-primary-foreground animate-bounce" : "bg-muted text-muted-foreground"
+            isDragging ? "bg-primary text-primary-foreground animate-bounce" : "bg-card text-dropzone-icon"
           }`}
         >
           <Upload className="w-8 h-8" />

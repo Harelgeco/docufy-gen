@@ -14,6 +14,8 @@ export default {
     },
     extend: {
       colors: {
+        gold: "hsl(var(--gold))",
+        dropzone: { DEFAULT: "hsl(var(--dropzone))", border: "hsl(var(--dropzone-border))", icon: "hsl(var(--dropzone-icon))" },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
