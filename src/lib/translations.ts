@@ -155,10 +155,3 @@ export const translations = {
 
 export type Language = keyof typeof translations;
 export type TranslationKey = keyof typeof translations.he;
-
-// The whole document must follow the selected language's direction,
-// otherwise mixed Hebrew/English lines render in a scrambled order.
-export const applyDocumentDirection = (language: Language) => {
-  document.documentElement.dir = language === "he" ? "rtl" : "ltr";
-  document.documentElement.lang = language;
-};
