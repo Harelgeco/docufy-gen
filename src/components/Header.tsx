@@ -1,6 +1,5 @@
 import { FileText, Languages } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { translations, Language } from "@/lib/translations";
 import { cn } from "@/lib/utils";
 
@@ -53,17 +52,29 @@ export const Header = ({ language, onLanguageChange }: HeaderProps) => {
           </div>
           
           <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 shrink-0"
-              onClick={() => onLanguageChange(language === "he" ? "en" : "he")}
-              aria-label={language === "he" ? "Switch to English" : "החלף לעברית"}
-              title={language === "he" ? "Switch to English" : "החלף לעברית"}
+            <Languages className="w-4 h-4 text-muted-foreground shrink-0" />
+            <div
+              role="group"
+              aria-label={language === "he" ? "בחירת שפה" : "Select language"}
+              className="flex items-center gap-1 rounded-lg border border-border bg-muted/60 p-1"
             >
-              <Languages className="w-5 h-5" />
-            </Button>
+              {(["he", "en"] as const).map((lng) => (
+                <button
+                  key={lng}
+                  type="button"
+                  onClick={() => onLanguageChange(lng)}
+                  aria-pressed={language === lng}
+                  className={cn(
+                    "rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-150",
+                    language === lng
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:bg-background hover:text-foreground"
+                  )}
+                >
+                  {lng === "he" ? "עברית" : "English"}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
