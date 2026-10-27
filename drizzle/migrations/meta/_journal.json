@@ -15,6 +15,13 @@
       "when": 1793052061841,
       "tag": "0001_add_subscription_tier",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793123877329,
+      "tag": "0002_migration",
+      "breakpoints": true
     }
   ]
 }

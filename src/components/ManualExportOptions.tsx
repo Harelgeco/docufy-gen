@@ -1,3 +1,4 @@
+import { recordDocumentsIssued } from "@/lib/usage";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -175,6 +176,7 @@ export const ManualExportOptions = ({
       if (blob) {
         const fileName = `document_${new Date().toISOString().split("T")[0]}.docx`;
         saveAs(blob, fileName);
+        recordDocumentsIssued(1);
         toast.success(
           language === "he" ? "המסמך הורד בהצלחה" : "Document downloaded successfully"
         );
@@ -207,6 +209,7 @@ export const ManualExportOptions = ({
         onProgress: (status) => console.log("PDF Generation:", status),
       });
 
+      recordDocumentsIssued(1);
       toast.success(
         language === "he" ? "ה-PDF הורד בהצלחה" : "PDF downloaded successfully"
       );
