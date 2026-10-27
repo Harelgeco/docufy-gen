@@ -107,7 +107,10 @@ export const ExportOptions = ({
         }
       }
 
-      if (successCount > 0) toast.success(`Generated ${successCount} document(s)`);
+      if (successCount > 0) {
+        recordDocumentsIssued(successCount);
+        toast.success(`Generated ${successCount} document(s)`);
+      }
     } catch (error) {
       console.error("Error in document generation:", error);
       toast.error("Failed to generate documents");
@@ -169,7 +172,10 @@ export const ExportOptions = ({
         }
       }
 
-      if (successCount > 0) toast.success(`Generated ${successCount} PDF(s)`);
+      if (successCount > 0) {
+        recordDocumentsIssued(successCount);
+        toast.success(`Generated ${successCount} PDF(s)`);
+      }
     } catch (error) {
       console.error("Error in PDF generation:", error);
       toast.error("Failed to generate PDFs");

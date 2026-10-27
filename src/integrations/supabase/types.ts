@@ -17,18 +17,21 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          documents_issued: number
           email: string | null
           id: string
           tier: Database["public"]["Enums"]["subscription_tier"]
         }
         Insert: {
           created_at?: string
+          documents_issued?: number
           email?: string | null
           id: string
           tier?: Database["public"]["Enums"]["subscription_tier"]
         }
         Update: {
           created_at?: string
+          documents_issued?: number
           email?: string | null
           id?: string
           tier?: Database["public"]["Enums"]["subscription_tier"]
@@ -61,6 +64,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_list_users: {
+        Args: never
+        Returns: {
+          banned_until: string
+          created_at: string
+          documents_issued: number
+          email: string
+          id: string
+          is_admin: boolean
+          last_sign_in_at: string
+          tier: Database["public"]["Enums"]["subscription_tier"]
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -68,6 +84,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      record_documents_issued: { Args: { _count: number }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "user"
