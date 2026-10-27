@@ -80,7 +80,7 @@ const Landing = () => {
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.12),transparent_60%)]" />
         <div className="container mx-auto px-4 pt-4 pb-20 md:pt-6 md:pb-28 text-center max-w-4xl">
           <motion.h1 custom={0} initial="hidden" animate="show" variants={fadeUp}
-            className="font-display text-4xl sm:text-5xl md:text-7xl font-extrabold leading-[1.12]">
+            className="font-display text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-[-0.015em] leading-[1.12]">
             מאות מסמכים מותאמים.<br /><span className="text-primary">בלחיצה אחת.</span>
           </motion.h1>
           <motion.p custom={1} initial="hidden" animate="show" variants={fadeUp}

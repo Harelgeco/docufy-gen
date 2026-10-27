@@ -15,7 +15,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Assistant", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["Frank Ruhl Libre", "Georgia", "serif"],
+        display: ["Heebo", "Assistant", "ui-sans-serif", "sans-serif"],
       },
       colors: {
 
