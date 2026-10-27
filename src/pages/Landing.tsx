@@ -5,6 +5,8 @@ import { FileText, Upload, MousePointerClick, FileDown, Play, ArrowLeft } from "
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { AuthDialog, AuthMode } from "@/components/AuthDialog";
+import { AutomationDemo } from "@/components/AutomationDemo";
+import { AutomationStory } from "@/components/AutomationStory";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
@@ -78,7 +80,7 @@ const Landing = () => {
 
       <section className="relative">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.12),transparent_60%)]" />
-        <div className="container mx-auto px-4 pt-4 pb-20 md:pt-6 md:pb-28 text-center max-w-4xl">
+        <div className="container mx-auto px-4 pt-4 pb-12 md:pt-6 md:pb-14 text-center max-w-4xl">
           <motion.h1 custom={0} initial="hidden" animate="show" variants={fadeUp}
             className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
             <span className="text-[0.94em]">מאות מסמכים מותאמים.</span><br /><span className="text-primary">בלחיצה אחת.</span>
@@ -98,6 +100,8 @@ const Landing = () => {
           </motion.div>
         </div>
       </section>
+
+      <AutomationStory onStart={() => openAuth("signup")} />
 
       <section className="bg-muted/50 py-20 md:py-28">
         <div className="container mx-auto px-4">
@@ -143,11 +147,10 @@ const Landing = () => {
 
       <AuthDialog open={authOpen} mode={mode} onOpenChange={setAuthOpen} onModeChange={setMode} />
       <Dialog open={demoOpen} onOpenChange={setDemoOpen}>
-        <DialogContent className="sm:max-w-2xl" dir="rtl">
-          <DialogTitle>הדגמה</DialogTitle>
-          <div className="aspect-video rounded-lg bg-muted flex flex-col items-center justify-center gap-3 text-muted-foreground">
-            <Play className="w-12 h-12" /> סרטון ההדגמה יעלה בקרוב
-          </div>
+        <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-3xl" dir="rtl">
+          <DialogTitle>מתבנית אחת ל־30 מסמכים אישיים</DialogTitle>
+          <AutomationDemo compact />
+          <p className="text-xs text-muted-foreground">המחשה עם נתונים לדוגמה, לא מדידת זמן הפקה.</p>
         </DialogContent>
       </Dialog>
     </div>
