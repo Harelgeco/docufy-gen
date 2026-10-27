@@ -65,7 +65,7 @@ const Landing = () => {
 
       <section className="relative">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.12),transparent_60%)]" />
-        <div className="container mx-auto px-4 pt-12 pb-24 md:pt-16 md:pb-32 text-center max-w-4xl">
+        <div className="container mx-auto px-4 pt-4 pb-20 md:pt-6 md:pb-28 text-center max-w-4xl">
           <motion.h1 custom={1} initial="hidden" animate="show" variants={fadeUp}
             className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
             מאות מסמכים מותאמים.<br /><span className="text-primary">בלחיצה אחת.</span>
