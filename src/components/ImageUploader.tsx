@@ -65,7 +65,7 @@ export const ImageUploader = ({
         className={`border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 cursor-pointer ${
           dragOver
             ? "border-primary bg-primary/10 scale-[1.02] shadow-lg ring-4 ring-primary/20"
-            : "border-muted-foreground/25 hover:border-primary/50"
+            : "bg-dropzone border-dropzone-border hover:border-gold"
         }`}
         onDragEnter={(e) => {
           e.preventDefault();
