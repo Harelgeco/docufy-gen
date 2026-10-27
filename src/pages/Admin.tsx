@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { Shield, ArrowRight, Ban, Trash2, UserCheck } from "lucide-react";
+import { applyDocumentDirection } from "@/lib/translations";
 
 type Tier = "free" | "pro" | "enterprise";
 type Row = {
