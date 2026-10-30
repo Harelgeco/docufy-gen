@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import NotFound from "./NotFound";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -82,15 +83,8 @@ const Admin = () => {
     }
   })();
 
-  if (state === "loading") return <div className="p-10 text-center text-muted-foreground" dir="rtl">טוען...</div>;
-  if (state === "denied")
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4" dir="rtl">
-        <Shield className="w-10 h-10 text-muted-foreground" />
-        <p className="text-lg">אין לך הרשאה לצפות בעמוד זה</p>
-        <Link to="/"><Button variant="outline">חזרה לדף הבית</Button></Link>
-      </div>
-    );
+  if (state === "loading") return <div className="min-h-screen bg-background" />;
+  if (state === "denied") return <NotFound />;
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">

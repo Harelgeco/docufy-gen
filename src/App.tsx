@@ -7,7 +7,8 @@ import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import ManualEntry from "./pages/ManualEntry";
 import NotFound from "./pages/NotFound";
-import Admin from "./pages/Admin";
+import { lazy, Suspense } from "react";
+const Admin = lazy(() => import("./pages/Admin"));
 
 const queryClient = new QueryClient();
 
@@ -21,7 +22,7 @@ const App = () => (
           <Route path="/" element={<Landing />} />
           <Route path="/excel" element={<Index />} />
           <Route path="/manual" element={<ManualEntry />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin" element={<Suspense fallback={null}><Admin /></Suspense>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
