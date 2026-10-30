@@ -68,25 +68,28 @@ const Landing = () => {
       </nav>
 
       <main>
-        <section className="container mx-auto px-4 max-w-6xl py-12 md:py-20 grid gap-10 md:gap-12 md:grid-cols-2 items-center">
-          <div>
-            <motion.h1 {...fade(0)} className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight">
-              אותה תבנית.<br />
-              <span className="text-primary">מסמכים מותאמים, בלי למלא הכול מחדש.</span>
-            </motion.h1>
-            <motion.p {...fade(0.08)} className="mt-5 text-lg text-muted-foreground leading-relaxed max-w-xl">
-              מעלים תבנית Word וקובץ Excel עם הנתונים, בוחרים רשומות ומפיקים מסמך מותאם לכל רשומה.
-            </motion.p>
-            <motion.div {...fade(0.16)} className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3">
-              <StartButton className="w-full sm:w-auto" />
-              <Button asChild variant="link" className="h-11 text-foreground">
-                <a href="#how">איך זה עובד</a>
-              </Button>
+        <section className="relative overflow-hidden">
+          <div aria-hidden="true" className="hero-wash pointer-events-none absolute inset-0" />
+          <div className="relative container mx-auto px-4 max-w-6xl py-12 md:py-20 grid gap-10 md:gap-12 md:grid-cols-2 items-center">
+            <div>
+              <motion.h1 {...fade(0)} className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight">
+                אותה תבנית.<br />
+                <span className="text-primary">מסמכים מותאמים, בלי למלא הכול מחדש.</span>
+              </motion.h1>
+              <motion.p {...fade(0.08)} className="mt-5 text-lg text-muted-foreground leading-relaxed max-w-xl">
+                מעלים תבנית Word וקובץ Excel עם הנתונים, בוחרים רשומות ומפיקים מסמך מותאם לכל רשומה.
+              </motion.p>
+              <motion.div {...fade(0.16)} className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3">
+                <StartButton className="w-full sm:w-auto" />
+                <Button asChild variant="link" className="h-11 text-foreground">
+                  <a href="#how">איך זה עובד</a>
+                </Button>
+              </motion.div>
+            </div>
+            <motion.div {...fade(0.2)}>
+              <HeroIllustration />
             </motion.div>
           </div>
-          <motion.div {...fade(0.2)}>
-            <HeroIllustration />
-          </motion.div>
         </section>
 
         <div className="border-t border-border" />
