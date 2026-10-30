@@ -45,7 +45,7 @@ const Landing = () => {
   );
 
   return (
-    <div dir="rtl" className="min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div dir="rtl" className="page-wash min-h-screen bg-background text-foreground overflow-x-hidden">
       <nav className="sticky top-0 z-40 bg-background/95 border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-2">
           <Link to="/" className="flex items-center gap-2 font-bold text-base sm:text-lg whitespace-nowrap">
@@ -68,28 +68,25 @@ const Landing = () => {
       </nav>
 
       <main>
-        <section className="relative overflow-hidden">
-          <div aria-hidden="true" className="hero-wash pointer-events-none absolute inset-0" />
-          <div className="relative container mx-auto px-4 max-w-6xl py-12 md:py-20 grid gap-10 md:gap-12 md:grid-cols-2 items-center">
-            <div>
-              <motion.h1 {...fade(0)} className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight">
-                אותה תבנית.<br />
-                <span className="text-primary">מסמכים מותאמים, בלי למלא הכול מחדש.</span>
-              </motion.h1>
-              <motion.p {...fade(0.08)} className="mt-5 text-lg text-muted-foreground leading-relaxed max-w-xl">
-                מעלים תבנית Word וקובץ Excel עם הנתונים, בוחרים רשומות ומפיקים מסמך מותאם לכל רשומה.
-              </motion.p>
-              <motion.div {...fade(0.16)} className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3">
-                <StartButton className="w-full sm:w-auto" />
-                <Button asChild variant="link" className="h-11 text-foreground">
-                  <a href="#how">איך זה עובד</a>
-                </Button>
-              </motion.div>
-            </div>
-            <motion.div {...fade(0.2)}>
-              <HeroIllustration />
+        <section className="container mx-auto px-4 max-w-6xl py-12 md:py-20 grid gap-10 md:gap-12 md:grid-cols-2 items-center">
+          <div>
+            <motion.h1 {...fade(0)} className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight">
+              אותה תבנית.<br />
+              <span className="text-primary">מסמכים מותאמים, בלי למלא הכול מחדש.</span>
+            </motion.h1>
+            <motion.p {...fade(0.08)} className="mt-5 text-lg text-muted-foreground leading-relaxed max-w-xl">
+              מעלים תבנית Word וקובץ Excel עם הנתונים, בוחרים רשומות ומפיקים מסמך מותאם לכל רשומה.
+            </motion.p>
+            <motion.div {...fade(0.16)} className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3">
+              <StartButton className="w-full sm:w-auto" />
+              <Button asChild variant="link" className="h-11 text-foreground">
+                <a href="#how">איך זה עובד</a>
+              </Button>
             </motion.div>
           </div>
+          <motion.div {...fade(0.2)}>
+            <HeroIllustration />
+          </motion.div>
         </section>
 
         <div className="border-t border-border" />

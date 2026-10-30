@@ -111,12 +111,15 @@ All colors MUST be HSL.
 /* Word documents rendered in preview/PDF keep their own picture sizes */
 section.docx-preview img, section.docx-wrapper img, section.docx-preview svg, section.docx-wrapper svg { max-width: none; max-height: none; }
 
-/* Soft theme-coloured wash behind the hero: transparent, fades out into the page background. */
+/* Soft theme-coloured wash behind the whole page: starts under the top bar and
+   fades out into the plain background colour before the subtitle line. */
 @layer components {
-  .hero-wash {
+  .page-wash {
     background-image:
-      radial-gradient(60rem 28rem at 78% -10%, hsl(var(--primary) / 0.11), transparent 64%),
-      radial-gradient(44rem 26rem at 6% 72%, hsl(var(--ring) / 0.10), transparent 66%),
-      radial-gradient(84rem 40rem at 46% 34%, hsl(var(--primary) / 0.05), transparent 74%);
+      radial-gradient(118% 92% at 82% -8%, hsl(var(--primary) / 0.13), transparent 58%),
+      radial-gradient(78% 58% at 0% 44%, hsl(var(--ring) / 0.12), transparent 60%);
+    background-repeat: no-repeat;
+    background-position: top center;
+    background-size: 100% 480px;
   }
 }
