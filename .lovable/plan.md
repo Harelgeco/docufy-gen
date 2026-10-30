@@ -1,103 +1,36 @@
+# Homepage upgrade (focused redesign, no product changes)
 
-# תוכנית לתיקון הכנסת תמונות למסמך DOCX
+Only the public homepage and its pieces change. Sign-up, login, routing, document creation, admin and backend stay untouched. Blue #00226B stays the main action color.
 
-## סיכום הבעיות שנמצאו
+## Page order
+1. Top bar: logo, language button, "התחברות" as a quiet link, "הרשמה" as an outline (not blue) button.
+2. Hero (text right, illustration left on desktop; stacked on mobile)
+   - Title: "אותה תבנית. מסמכים מותאמים, בלי למלא הכול מחדש."
+   - Subtitle: "מעלים תבנית Word וקובץ Excel עם הנתונים, בוחרים רשומות ומפיקים מסמך מותאם לכל רשומה."
+   - One blue "התחל עכשיו" (same destination as today) + quiet link "איך זה עובד" that scrolls down.
+   - Remove the background video and the "צפה בהדגמה" button (it only opens "coming soon").
+   - Static illustration labeled "המחשה": Word template + Excel rows -> several filled documents, with made-up sample names only.
+3. Problem / Solution / Result: three static cards side by side (stacked on mobile), large clear headings, no auto-rotation, timers or progress bars. Wording avoids claims like "one click", "in a minute", "no mistakes".
+4. How it works: the existing three numbered steps kept visible together, wording checked against what the app really does (upload, choose records or fill manually, download PDF or Word).
+5. FAQ (keyboard-accessible accordion), only answers verified in the app: which files to prepare, how to mark fields (<<field>>), choosing only some records, manual fill without Excel, download formats.
+6. Closing band: short benefit line + blue "התחל עכשיו".
+7. Simple footer: product name, links to existing pages, year.
 
-לאחר בדיקה מעמיקה של הקוד והדוקומנטציה של `docxtemplater-image-module-free`, זיהיתי את הבעיות הבאות:
+## Design
+- Calm off-white background, neutral tones, blue for actions, aqua only as a small accent.
+- One Hebrew font family (Heebo or Assistant) with clear weights; no heavy gradients, glows or glass.
+- Subtle entry fades only, disabled for reduced-motion users; reserved sizes so nothing jumps.
+- Touch targets at least 44px, no horizontal scroll.
 
-1. **סינטקס שגוי**: השתמשנו ב-`%<<תמונות>>` בעוד שהסינטקס הנכון הוא `{%תמונות}` (סוגריים מסולסלים, לא angle brackets)
-2. **פורמט נתונים שגוי**: הפונקציה `getImage` מחזירה `Uint8Array` במקום `ArrayBuffer`
-3. **התבנית לא מכילה placeholder לתמונות**: קובץ התבנית הנוכחי לא מכיל את הסינטקס הנדרש לתמונות
+## Checks
+- Screenshots at 320, 390, 768, 1440 widths and with enlarged text.
+- Every button/link reaches its target; sign-up/login dialog still opens; no new console errors.
 
-## הפתרון
+## Will report as still needed from you
+Privacy/file-retention policy, contact details, pricing, a real demo video, confirmed target audience.
 
-### שלב 1: תיקון פונקציית getImage
-
-שינוי הפונקציה להחזיר `ArrayBuffer` במקום `Uint8Array`:
-
-```typescript
-const base64DataURLToArrayBuffer = (dataURL: string): ArrayBuffer | false => {
-  const base64Regex = /^data:image\/(png|jpg|jpeg|gif|svg|svg\+xml|webp);base64,/;
-  if (!base64Regex.test(dataURL)) {
-    return false;
-  }
-  const stringBase64 = dataURL.replace(base64Regex, "");
-  const binaryString = window.atob(stringBase64);
-  const len = binaryString.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes.buffer; // החזרת ArrayBuffer
-};
-```
-
-### שלב 2: הסרת ה-custom delimiters מה-image module
-
-מכיוון ש-image module משתמש תמיד בסוגריים מסולסלים `{%...}` בלי קשר ל-delimiters של הטקסט:
-
-```typescript
-// Template data לתמונות - שמות ללא << >>
-templateData["תמונות"] = imageDataUrl;
-templateData["image"] = imageDataUrl;
-```
-
-### שלב 3: עדכון קובץ התבנית
-
-צריך לערוך את קובץ התבנית `פורמט_פיקוח_עליון.docx` ולהוסיף:
-- `{%תמונות}` - למקום שבו רוצים להכניס תמונה
-
-### שלב 4: עדכון ההוראות למשתמש
-
-שינוי ההודעה באתר:
-- **קודם**: "כדי שתמונות יופיעו במסמך, התבנית צריכה להכיל: %<<תמונות>>"
-- **אחרי**: "כדי שתמונות יופיעו במסמך, התבנית צריכה להכיל: {%תמונות}"
-
----
-
-## פרטים טכניים
-
-### קבצים שיעודכנו
-
-| קובץ | שינוי |
-|------|-------|
-| `src/components/ManualExportOptions.tsx` | תיקון פונקציות המרה והגדרות image module |
-| `public/templates/פורמט_פיקוח_עליון.docx` | הוספת `{%תמונות}` לתבנית |
-
-### קוד מתוקן ל-ManualExportOptions.tsx
-
-```typescript
-// פונקציה חדשה להמרה - מחזירה ArrayBuffer
-const base64DataURLToArrayBuffer = (dataURL: string): ArrayBuffer | false => {
-  const base64Regex = /^data:image\/(png|jpg|jpeg|gif|svg|svg\+xml|webp);base64,/;
-  if (!base64Regex.test(dataURL)) {
-    return false;
-  }
-  const stringBase64 = dataURL.replace(base64Regex, "");
-  const binaryString = window.atob(stringBase64);
-  const len = binaryString.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes.buffer;
-};
-
-// הגדרת Image Module
-const imageOpts = {
-  centered: false,
-  fileType: "docx" as const,
-  getImage: (tagValue: string) => {
-    return base64DataURLToArrayBuffer(tagValue);
-  },
-  getSize: () => [400, 300],
-};
-```
-
-### הערה חשובה
-
-הסינטקס של תמונות `{%...}` הוא **נפרד** מהסינטקס של טקסט `<<...>>`:
-- טקסט: `<<שם פרויקט>>`, `<<תאריך בדיקה>>`
-- תמונות: `{%תמונות}`, `{%image1}`
-
-זה אומר שבאותו מסמך יהיו שני סוגי placeholders.
+## Technical notes
+- Edit `src/pages/Landing.tsx`; rewrite `src/components/ProblemSolution.tsx` as static; new `HeroIllustration`, `LandingFaq` (shadcn Accordion), `LandingFooter` components.
+- Font via Google Fonts link in `index.html` + `fontFamily` in `tailwind.config.ts`; small token tweaks in `src/index.css` (keep primary).
+- Remove hero video usage (asset pointer file can stay unused or be deleted).
+- Update the demo-animation memory, since autoplay is now rejected for the homepage.
