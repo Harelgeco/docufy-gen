@@ -13,6 +13,7 @@ export default {
       },
     },
     extend: {
+      fontFamily: { sans: ["Heebo", "system-ui", "sans-serif"] },
       colors: {
         gold: "hsl(var(--gold))",
         dropzone: { DEFAULT: "hsl(var(--dropzone))", border: "hsl(var(--dropzone-border))", icon: "hsl(var(--dropzone-icon))" },

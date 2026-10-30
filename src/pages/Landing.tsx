@@ -1,47 +1,27 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
-import { FileText, Upload, MousePointerClick, FileDown, Play, ArrowLeft } from "lucide-react";
+import { FileText, Upload, MousePointerClick, FileDown, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { AuthDialog, AuthMode } from "@/components/AuthDialog";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
-import heroVideo from "@/assets/hero-loop.mp4.asset.json";
 import { ProblemSolution } from "@/components/ProblemSolution";
+import { HeroIllustration } from "@/components/landing/HeroIllustration";
+import { LandingFaq } from "@/components/landing/LandingFaq";
 
-const features = [
-  { icon: Upload, title: "העלה קבצים", text: "העלו תבנית Word עם שדות מותאמים וקובץ Excel עם הנתונים.  " },
-  { icon: MousePointerClick, title: "בחר רשומות", text: "בחר את השמות שעבורם תרצה מסמכים, או מלא את השדות ידנית." },
-  { icon: FileDown, title: "הורד PDF או Word", text: "קבל מסמכים מוכנים ששומרים בדיוק על העיצוב המקורי של התבנית." },
+const steps = [
+  { icon: Upload, title: "מעלים קבצים", text: "תבנית Word עם שדות מסומנים, וקובץ Excel עם הנתונים." },
+  { icon: MousePointerClick, title: "בוחרים רשומות", text: "בוחרים את השמות שעבורם רוצים מסמכים, או ממלאים את השדות ידנית." },
+  { icon: FileDown, title: "מורידים PDF או Word", text: "צופים בתצוגה מקדימה ומורידים מסמך מותאם לכל רשומה." },
 ];
-
-const EASE = [0.22, 1, 0.36, 1] as const;
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
-  show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.12, duration: 0.6, ease: EASE } }),
-};
-
-// Scroll-triggered card entrance: opacity + translateY only (GPU friendly), fast and one-shot.
-const cardIn = {
-  hidden: { opacity: 0, y: 16 },
-  show: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.07, duration: 0.32, ease: EASE },
-  }),
-};
-
-const cta = "transition-all duration-200 hover:scale-105 hover:shadow-lg";
 
 const Landing = () => {
   const [authOpen, setAuthOpen] = useState(false);
   const [mode, setMode] = useState<AuthMode>("signup");
-  const [demoOpen, setDemoOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
-  const reduceMotion = useReducedMotion();
+  const reduce = useReducedMotion();
 
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((_e, s) => setUser(s?.user ?? null));
@@ -55,115 +35,107 @@ const Landing = () => {
     setAuthOpen(true);
   };
 
+  const fade = (delay = 0) =>
+    reduce ? {} : { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.4, delay } };
+
+  const StartButton = ({ className = "" }: { className?: string }) => (
+    <Button size="lg" className={`h-12 min-w-44 px-8 text-base gap-2 ${className}`} onClick={() => openAuth("signup")}>
+      התחל עכשיו <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+    </Button>
+  );
+
   return (
     <div dir="rtl" className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      <nav className="sticky top-0 z-40 backdrop-blur bg-background/80 border-b border-border">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 font-bold text-lg">
-            <FileText className="w-7 h-7 text-primary" /> מחולל מסמכים
+      <nav className="sticky top-0 z-40 bg-background/95 border-b border-border">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-2">
+          <Link to="/" className="flex items-center gap-2 font-bold text-base sm:text-lg whitespace-nowrap">
+            <FileText className="w-6 h-6 text-primary" aria-hidden="true" /> מחולל מסמכים
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             {user ? (
               <>
-                <Button variant="ghost" onClick={() => supabase.auth.signOut()}>התנתק</Button>
-                <Button className={cta} onClick={() => navigate("/excel")}>לאפליקציה</Button>
+                <Button variant="ghost" className="h-11" onClick={() => supabase.auth.signOut()}>התנתק</Button>
+                <Button variant="outline" className="h-11" onClick={() => navigate("/excel")}>לאפליקציה</Button>
               </>
             ) : (
               <>
-                <Button variant="ghost" onClick={() => openAuth("login")}>התחברות</Button>
-                <Button className={cta} onClick={() => openAuth("signup")}>הרשמה</Button>
+                <Button variant="link" className="h-11 text-foreground" onClick={() => openAuth("login")}>התחברות</Button>
+                <Button variant="outline" className="h-11" onClick={() => openAuth("signup")}>הרשמה</Button>
               </>
             )}
           </div>
         </div>
       </nav>
 
-      <section className="relative isolate overflow-hidden">
-        <video
-          className="absolute inset-0 -z-20 h-full w-full object-cover"
-          src={heroVideo.url}
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="metadata"
-          aria-hidden="true"
-        />
-        <div className="absolute inset-0 -z-10 bg-background/80" />
-        <div className="container mx-auto px-4 pt-4 pb-20 md:pt-6 md:pb-28 text-center max-w-4xl">
-          <motion.h1 custom={0} initial="hidden" animate="show" variants={fadeUp}
-            className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
-            <span className="text-[0.94em]">מאות מסמכים מותאמים.</span><br /><span className="text-primary">בלחיצה אחת.</span>
-          </motion.h1>
-          <motion.p custom={1} initial="hidden" animate="show" variants={fadeUp}
-            className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            מייצר מסמכים מהתבניות שלכם.
-          </motion.p>
-          <motion.div custom={2} initial="hidden" animate="show" variants={fadeUp}
-            className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
-            <Button size="lg" className={`h-12 px-8 text-base gap-2 ${cta}`} onClick={() => openAuth("signup")}>
-              התחל עכשיו <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <Button size="lg" variant="outline" className={`h-12 px-8 text-base gap-2 ${cta}`} onClick={() => setDemoOpen(true)}>
-              צפה בהדגמה <Play className="w-4 h-4 rotate-180" />
-            </Button>
-          </motion.div>
-        </div>
-      </section>
-
-      <ProblemSolution />
-
-      <section className="bg-muted/50 py-20 md:py-28">
-        <div className="container mx-auto px-4">
-          <motion.div custom={0} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.6 }}
-            variants={fadeUp} className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold">איך זה עובד</h2>
-            <p className="mt-3 text-muted-foreground">שלושה צעדים פשוטים</p>
-          </motion.div>
-          <div className="grid gap-6 md:grid-cols-3 max-w-6xl mx-auto">
-            {features.map((f, i) => (
-              <motion.div
-                key={f.title}
-                custom={i}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true, amount: 0.35 }}
-                variants={cardIn}
-                whileHover={
-                  reduceMotion
-                    ? undefined
-                    : { y: -6, transition: { type: "spring", stiffness: 420, damping: 26 } }
-                }
-                className="group rounded-2xl bg-card border border-border p-8 shadow-sm transition-[box-shadow,border-color] duration-200 ease-out hover:shadow-xl hover:border-primary/40"
-              >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5 transition-transform duration-200 ease-out group-hover:scale-110 group-hover:-rotate-6">
-                  <f.icon className="w-6 h-6 text-primary" />
-                </div>
-                <div className="flex items-center gap-1.5 text-sm font-medium text-primary mb-1">
-                  שלב {i + 1}
-                  <ArrowLeft className="w-3.5 h-3.5 opacity-0 scale-50 transition-all duration-200 ease-out group-hover:opacity-100 group-hover:scale-100" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2 text-primary">
-                  {f.title}
-                </h3>
-                <p className="text-muted-foreground leading-relaxed">{f.text}</p>
-              </motion.div>
-            ))}
+      <main>
+        <section className="container mx-auto px-4 max-w-6xl py-12 md:py-20 grid gap-10 md:gap-12 md:grid-cols-2 items-center">
+          <div>
+            <motion.h1 {...fade(0)} className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight">
+              אותה תבנית.<br />
+              <span className="text-primary">מסמכים מותאמים, בלי למלא הכול מחדש.</span>
+            </motion.h1>
+            <motion.p {...fade(0.08)} className="mt-5 text-lg text-muted-foreground leading-relaxed max-w-xl">
+              מעלים תבנית Word וקובץ Excel עם הנתונים, בוחרים רשומות ומפיקים מסמך מותאם לכל רשומה.
+            </motion.p>
+            <motion.div {...fade(0.16)} className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3">
+              <StartButton className="w-full sm:w-auto" />
+              <Button asChild variant="link" className="h-11 text-foreground">
+                <a href="#how">איך זה עובד</a>
+              </Button>
+            </motion.div>
           </div>
-        </div>
-      </section>
+          <motion.div {...fade(0.2)}>
+            <HeroIllustration />
+          </motion.div>
+        </section>
 
-      <footer className="py-10 text-center text-sm text-muted-foreground">© {new Date().getFullYear()} מחולל מסמכים</footer>
+        <div className="border-t border-border" />
+        <ProblemSolution />
+
+        <section id="how" aria-labelledby="how-title" className="bg-muted/50 py-16 md:py-24 scroll-mt-16">
+          <div className="container mx-auto px-4 max-w-6xl">
+            <h2 id="how-title" className="text-2xl md:text-3xl font-bold text-center">איך זה עובד</h2>
+            <p className="mt-2 mb-10 md:mb-14 text-center text-muted-foreground">שלושה שלבים</p>
+            <ol className="grid gap-5 md:grid-cols-3">
+              {steps.map((s, i) => (
+                <li key={s.title} className="rounded-xl bg-card border border-border p-6 md:p-7">
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold">{i + 1}</span>
+                    <s.icon className="w-6 h-6 text-primary" aria-hidden="true" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">{s.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed">{s.text}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+        <LandingFaq />
+
+        <section className="bg-primary text-primary-foreground">
+          <div className="container mx-auto px-4 max-w-3xl py-14 md:py-20 text-center">
+            <h2 className="text-2xl md:text-3xl font-bold">מוכנים להפסיק להקליד את אותם פרטים שוב?</h2>
+            <p className="mt-3 opacity-85">מעלים תבנית ונתונים ומתחילים.</p>
+            <Button size="lg" variant="secondary" className="mt-8 h-12 min-w-44 px-8 text-base gap-2" onClick={() => openAuth("signup")}>
+              התחל עכשיו <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+            </Button>
+          </div>
+        </section>
+      </main>
+
+      <footer className="border-t border-border">
+        <div className="container mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+          <span>© {new Date().getFullYear()} מחולל מסמכים</span>
+          <nav aria-label="קישורים" className="flex gap-4">
+            <a href="#how" className="hover:text-foreground">איך זה עובד</a>
+            <Link to="/excel" className="hover:text-foreground">מצב Excel</Link>
+            <Link to="/manual" className="hover:text-foreground">הזנה ידנית</Link>
+          </nav>
+        </div>
+      </footer>
 
       <AuthDialog open={authOpen} mode={mode} onOpenChange={setAuthOpen} onModeChange={setMode} />
-      <Dialog open={demoOpen} onOpenChange={setDemoOpen}>
-        <DialogContent className="sm:max-w-2xl" dir="rtl">
-          <DialogTitle>הדגמה</DialogTitle>
-          <div className="aspect-video rounded-lg bg-muted flex flex-col items-center justify-center gap-3 text-muted-foreground">
-            <Play className="w-12 h-12" /> סרטון ההדגמה יעלה בקרוב
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
