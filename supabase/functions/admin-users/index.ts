@@ -14,10 +14,10 @@ Deno.serve(async (req) => {
     const auth = req.headers.get("Authorization") ?? "";
     const userClient = createClient(url, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: auth } } });
     const { data: { user } } = await userClient.auth.getUser();
-    if (!user) return json({ error: "unauthorized" }, 401);
+    if (!user) return json({ error: "not found" }, 404);
     const admin = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const { data: isAdmin } = await admin.rpc("has_role", { _user_id: user.id, _role: "admin" });
-    if (!isAdmin) return json({ error: "forbidden" }, 403);
+    if (!isAdmin) return json({ error: "not found" }, 404);
 
     const { action, userId } = await req.json();
     if (typeof userId !== "string" || !/^[0-9a-f-]{36}$/i.test(userId)) return json({ error: "bad user" }, 400);
