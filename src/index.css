@@ -112,14 +112,18 @@ All colors MUST be HSL.
 section.docx-preview img, section.docx-wrapper img, section.docx-preview svg, section.docx-wrapper svg { max-width: none; max-height: none; }
 
 /* Soft theme-coloured wash behind the whole page: starts under the top bar and
-   fades out into the plain background colour before the subtitle line. */
+   fades out into the plain background colour just past the hero subtitle. */
 @layer components {
   .page-wash {
     background-image:
       radial-gradient(118% 92% at 82% -8%, hsl(var(--primary) / 0.13), transparent 58%),
-      radial-gradient(78% 58% at 0% 44%, hsl(var(--ring) / 0.12), transparent 60%);
+      radial-gradient(78% 42% at 0% 18%, hsl(var(--ring) / 0.12), transparent 62%);
     background-repeat: no-repeat;
     background-position: top center;
-    background-size: 100% 480px;
+    background-size: 100% 780px;
+  }
+
+  @media (max-width: 767px) {
+    .page-wash { background-size: 100% 900px; }
   }
 }
