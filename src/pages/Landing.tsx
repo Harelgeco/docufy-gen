@@ -48,7 +48,7 @@ const Landing = () => {
     <div dir="rtl" className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <nav className="sticky top-0 z-40 bg-background/95 border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-2">
-          <Link to="/" className="flex items-center gap-2 font-bold text-lg">
+          <Link to="/" className="flex items-center gap-2 font-bold text-base sm:text-lg whitespace-nowrap">
             <FileText className="w-6 h-6 text-primary" aria-hidden="true" /> מחולל מסמכים
           </Link>
           <div className="flex items-center gap-1 sm:gap-2">
