@@ -72,7 +72,7 @@ const Landing = () => {
           <div>
             <motion.h1 {...fade(0)} className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight">
               אותה תבנית.<br />
-              <span className="text-primary">מסמכים מותאמים, בלי למלא הכול מחדש.</span>
+              <span className="text-primary">מסמכים מותאמים,<br />בלי למלא הכול מחדש.</span>
             </motion.h1>
             <motion.p {...fade(0.08)} className="mt-5 text-lg text-muted-foreground leading-relaxed max-w-xl">
               מעלים תבנית Word וקובץ Excel עם הנתונים, בוחרים רשומות ומפיקים מסמך מותאם לכל רשומה.
