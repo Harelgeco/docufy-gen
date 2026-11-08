@@ -1,3 +1,4 @@
+import { useIssueGate } from "@/lib/issueGate";
 import { recordDocumentsIssued } from "@/lib/usage";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
@@ -100,6 +101,7 @@ export const ManualExportOptions = ({
   images,
 }: ManualExportOptionsProps) => {
   const t = translations[language];
+  const { gate, dialog } = useIssueGate();
   const [generating, setGenerating] = useState(false);
 
   const generateDocument = async (): Promise<Blob | null> => {
@@ -249,7 +251,7 @@ export const ManualExportOptions = ({
       {/* Main action: one big, unmistakable button */}
       <Button
         className="w-full h-14 text-base font-bold gap-3 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.99] transition-all"
-        onClick={handleDownloadPDF}
+        onClick={() => gate(1, handleDownloadPDF)}
         disabled={disabled || generating}
       >
         <Download className="h-5 w-5 shrink-0" />
@@ -260,12 +262,13 @@ export const ManualExportOptions = ({
       <Button
         className="w-full h-11 mt-3 text-sm gap-2"
         variant="outline"
-        onClick={handleDownloadWord}
+        onClick={() => gate(1, handleDownloadWord)}
         disabled={disabled || generating}
       >
         <FileText className="h-4 w-4 shrink-0" />
         {t.issueWord}
       </Button>
-    </Card>
+    {dialog}
+      </Card>
   );
 };

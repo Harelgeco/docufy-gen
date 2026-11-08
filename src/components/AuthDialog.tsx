@@ -20,9 +20,11 @@ interface Props {
   mode: AuthMode;
   onOpenChange: (open: boolean) => void;
   onModeChange: (mode: AuthMode) => void;
+  title?: string;
+  description?: string;
 }
 
-export const AuthDialog = ({ open, mode, onOpenChange, onModeChange }: Props) => {
+export const AuthDialog = ({ open, mode, onOpenChange, onModeChange, title, description }: Props) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
@@ -43,7 +45,7 @@ export const AuthDialog = ({ open, mode, onOpenChange, onModeChange }: Props) =>
       const { error } = await supabase.auth.signUp({
         email: parsed.data.email,
         password: parsed.data.password,
-        options: { emailRedirectTo: window.location.origin },
+        options: { emailRedirectTo: window.location.origin + window.location.pathname },
       });
       if (error) toast.error(error.message);
       else {
@@ -62,7 +64,7 @@ export const AuthDialog = ({ open, mode, onOpenChange, onModeChange }: Props) =>
   };
 
   const google = async () => {
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + window.location.pathname });
     if (result.error) {
       toast.error("ההתחברות עם Google נכשלה");
       return;
@@ -75,9 +77,9 @@ export const AuthDialog = ({ open, mode, onOpenChange, onModeChange }: Props) =>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md" dir="rtl">
         <DialogHeader className="text-right sm:text-right">
-          <DialogTitle className="text-2xl">{isSignup ? "יצירת חשבון" : "התחברות"}</DialogTitle>
+          <DialogTitle className="text-2xl">{title ?? (isSignup ? "יצירת חשבון" : "התחברות")}</DialogTitle>
           <DialogDescription>
-            {isSignup ? "התחל ליצור מסמכים מותאמים בדקות" : "ברוך שובך! התחבר כדי להמשיך"}
+            {description ?? (isSignup ? "התחל ליצור מסמכים מותאמים בדקות" : "ברוך שובך! התחבר כדי להמשיך")}
           </DialogDescription>
         </DialogHeader>
 
