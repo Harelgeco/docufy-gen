@@ -1,18 +1,19 @@
-import { describe, it, expect } from "bun:test";
+import { describe, test } from "node:test";
+import { deepStrictEqual, strictEqual } from "node:assert";
 import { checkIssueAllowance } from "./quota";
 
 describe("free tier monthly allowance", () => {
-  it("allows 3 documents for a fresh free user", () => {
-    expect(checkIssueAllowance("free", 0, 3)).toEqual({ allowed: true, remaining: 3 });
+  test("allows 3 documents for a fresh free user", () => {
+    deepStrictEqual(checkIssueAllowance("free", 0, 3), { allowed: true, remaining: 3 });
   });
-  it("blocks 4 documents for a fresh free user", () => {
-    expect(checkIssueAllowance("free", 0, 4).allowed).toBe(false);
+  test("blocks 4 documents for a fresh free user", () => {
+    strictEqual(checkIssueAllowance("free", 0, 4).allowed, false);
   });
-  it("leaves 2 after issuing 1", () => {
-    expect(checkIssueAllowance("free", 1, 2)).toEqual({ allowed: true, remaining: 2 });
-    expect(checkIssueAllowance("free", 1, 3).allowed).toBe(false);
+  test("leaves 2 after issuing 1", () => {
+    deepStrictEqual(checkIssueAllowance("free", 1, 2), { allowed: true, remaining: 2 });
+    strictEqual(checkIssueAllowance("free", 1, 3).allowed, false);
   });
-  it("paid tiers are not limited", () => {
-    expect(checkIssueAllowance("pro", 50, 100).allowed).toBe(true);
+  test("paid tiers are not limited", () => {
+    strictEqual(checkIssueAllowance("pro", 50, 100).allowed, true);
   });
 });
