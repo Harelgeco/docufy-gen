@@ -173,7 +173,22 @@ export function TemplateBuilder({ file, open, onOpenChange, onComplete, language
 
   const finish = () => {
     if (!session) return;
-    onComplete(buildFile(session));
+    const f = buildFile(session);
+    fileRef.current = f;
+    onComplete(f);
+    onOpenChange(false);
+  };
+
+  // Closing keeps the work: the edited document replaces the uploaded file,
+  // so reopening the editor continues from where the user stopped.
+  const close = (o: boolean) => {
+    if (o) return onOpenChange(true);
+    setPending(undefined);
+    if (session && history.current.length) {
+      const f = buildFile(session);
+      fileRef.current = f;
+      onComplete(f);
+    }
     onOpenChange(false);
   };
 
@@ -189,8 +204,17 @@ export function TemplateBuilder({ file, open, onOpenChange, onComplete, language
     );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl h-[90vh] flex flex-col gap-3" dir={language === "he" ? "rtl" : "ltr"}>
+    <Dialog open={open} onOpenChange={close}>
+      <DialogContent
+        className="max-w-6xl h-[90vh] flex flex-col gap-3"
+        dir={language === "he" ? "rtl" : "ltr"}
+        onEscapeKeyDown={(e) => {
+          e.preventDefault();
+          setPending(undefined);
+          window.getSelection()?.removeAllRanges();
+        }}
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>{t.title}</DialogTitle>
           <DialogDescription>{t.desc}</DialogDescription>

@@ -167,7 +167,7 @@ export function buildFile(s: TemplateSession): File {
     type: "blob",
     mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   }) as Blob;
-  const base = s.fileName.replace(/\.docx?$/i, "");
+  const base = s.fileName.replace(/\.docx?$/i, "").replace(/-תבנית$/, "");
   return new File([blob], `${base}-תבנית.docx`, { type: blob.type });
 }
 
