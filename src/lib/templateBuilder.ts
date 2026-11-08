@@ -64,9 +64,7 @@ export async function openTemplateSession(file: File): Promise<TemplateSession> 
 }
 
 const textNodes = (p: Element) =>
-  Array.from(p.getElementsByTagNameNS(W_NS, "t")).filter(
-    (t) => t.closest ? closestP(t) === p : true
-  );
+  Array.from(p.getElementsByTagNameNS(W_NS, "t")).filter((t) => closestP(t) === p);
 
 function closestP(el: Element): Element | null {
   let n: Element | null = el.parentElement;
