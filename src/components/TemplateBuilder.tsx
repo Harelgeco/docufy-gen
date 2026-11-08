@@ -36,6 +36,8 @@ const T = {
     oneLine: "יש לסמן טקסט בתוך שורה אחת",
     unsafe: "הקובץ נחסם: מבנה לא בטוח או לא נתמך",
     header: "כותרת עליונה", footer: "כותרת תחתונה",
+    dateSuggest: "זה התאריך של היום? לחצו כאן כדי שימולא אוטומטית בכל הנפקה (תאריך נוכחי)",
+    dateTip: "טיפ: סמנו את תאריך המסמך וקראו לשדה \"תאריך נוכחי\" — התאריך של היום ימולא אוטומטית.",
   },
   en: {
     title: "Turn document into a template",
@@ -53,8 +55,18 @@ const T = {
     oneLine: "Select text within a single line",
     unsafe: "File blocked: unsafe or unsupported structure",
     header: "Header", footer: "Footer",
+    dateSuggest: "Is this today's date? Click to fill it automatically on every export (תאריך נוכחי)",
+    dateTip: "Tip: select the document date and name the field \"תאריך נוכחי\" — today's date fills in automatically.",
   },
 };
+
+const CURRENT_DATE = "תאריך נוכחי";
+const HE_MONTHS = "ינואר|פברואר|מרץ|מרס|אפריל|מאי|יוני|יולי|אוגוסט|ספטמבר|אוקטובר|נובמבר|דצמבר";
+const looksLikeDate = (s: string) =>
+  /\b\d{1,2}[./-]\d{1,2}[./-]\d{2,4}\b/.test(s) ||
+  /\b\d{4}[./-]\d{1,2}[./-]\d{1,2}\b/.test(s) ||
+  new RegExp(`(${HE_MONTHS})`).test(s) ||
+  /\b(january|february|march|april|may|june|july|august|september|october|november|december)\b/i.test(s);
 
 export function TemplateBuilder({ file, open, onOpenChange, onComplete, language }: Props) {
   const t = T[language];
@@ -215,6 +227,15 @@ export function TemplateBuilder({ file, open, onOpenChange, onComplete, language
                   onChange={(e) => setName(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") apply(false); if (e.key === "Escape") setPending(undefined); }}
                 />
+                {looksLikeDate(pending.text) && name !== CURRENT_DATE && (
+                  <button
+                    type="button"
+                    className="w-full rounded border border-ring/40 bg-accent p-2 text-start text-xs text-primary hover:bg-accent/70"
+                    onClick={() => setName(CURRENT_DATE)}
+                  >
+                    {t.dateSuggest}
+                  </button>
+                )}
                 {occurrences > 1 ? (
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline" className="flex-1" onClick={() => apply(false)}>{t.onlyHere}</Button>
@@ -234,6 +255,7 @@ export function TemplateBuilder({ file, open, onOpenChange, onComplete, language
                 <div key={f} className="rounded border bg-accent px-2 py-1 text-sm text-primary">&lt;&lt;{f}&gt;&gt;</div>
               ))}
             </div>
+            <p className="rounded border border-ring/40 bg-accent p-2 text-xs text-primary">💡 {t.dateTip}</p>
             <Button variant="ghost" size="sm" onClick={undo} disabled={!history.current.length}><Undo2 className="h-4 w-4" />{t.undo}</Button>
             <Button variant="outline" onClick={download} disabled={!fields.length}><Download className="h-4 w-4" />{t.download}</Button>
             <Button size="lg" onClick={finish} disabled={!fields.length}>{t.continue}<ArrowLeft className={`h-4 w-4 ${language === "en" ? "rotate-180" : ""}`} /></Button>
