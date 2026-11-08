@@ -39,7 +39,6 @@ const T = {
     unsafe: "הקובץ נחסם: מבנה לא בטוח או לא נתמך",
     header: "כותרת עליונה", footer: "כותרת תחתונה",
     dateSuggest: "זה התאריך של היום? לחצו כאן כדי שימולא אוטומטית בכל הנפקה (תאריך נוכחי)",
-    dateTip: "טיפ: סמנו את תאריך המסמך וקראו לשדה \"תאריך נוכחי\" — התאריך של היום ימולא אוטומטית.",
   },
   en: {
     title: "Turn document into a template",
@@ -58,9 +57,22 @@ const T = {
     unsafe: "File blocked: unsafe or unsupported structure",
     header: "Header", footer: "Footer",
     dateSuggest: "Is this today's date? Click to fill it automatically on every export (תאריך נוכחי)",
-    dateTip: "Tip: select the document date and name the field \"תאריך נוכחי\" — today's date fills in automatically.",
   },
 };
+
+/** Side-panel tips. Add another entry here and it shows up in both languages' panels. */
+const TIPS: { he: Tip[]; en: Tip[] } = {
+  he: [
+    { text: "שמות השדות יהיו הכותרות של העמודות בקובץ האקסל.", withExample: true },
+    { text: 'סמנו את תאריך המסמך וקראו לשדה "תאריך נוכחי" — התאריך של היום ימולא אוטומטית.' },
+  ],
+  en: [
+    { text: "Field names become the column headers in your Excel file.", withExample: true },
+    { text: 'Select the document date and name the field "תאריך נוכחי" — today\'s date fills in automatically.' },
+  ],
+};
+
+interface Tip { text: string; withExample?: boolean }
 
 const CURRENT_DATE = "תאריך נוכחי";
 const HE_MONTHS = "ינואר|פברואר|מרץ|מרס|אפריל|מאי|יוני|יולי|אוגוסט|ספטמבר|אוקטובר|נובמבר|דצמבר";
