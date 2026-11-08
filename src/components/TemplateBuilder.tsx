@@ -220,7 +220,7 @@ export function TemplateBuilder({ file, open, onOpenChange, onComplete, language
   return (
     <Dialog open={open} onOpenChange={close}>
       <DialogContent
-        className="max-w-6xl h-[90vh] flex flex-col gap-3"
+        className="max-w-6xl h-[94vh] flex flex-col gap-2"
         dir={language === "he" ? "rtl" : "ltr"}
         onEscapeKeyDown={(e) => {
           e.preventDefault();
