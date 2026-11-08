@@ -150,9 +150,19 @@ const ManualEntry = () => {
           />
           <ReadyDocumentButton language={language} onPick={(f) => { setWordFile(f); setBuilderOpen(true); }} />
           {wordFile && (
-            <Button variant="outline" className="mt-3 w-full" onClick={() => setBuilderOpen(true)}>
+            <Button
+              variant="outline"
+              className="mt-3 w-full border-primary/40 bg-accent/60 text-primary hover:bg-accent hover:text-primary"
+              onClick={() => setBuilderOpen(true)}
+            >
               <Wand2 className="h-4 w-4" />
-              {language === "he" ? "סמן שדות על המסמך (הפוך לתבנית)" : "Mark fields on the document (make template)"}
+              {language === "he"
+                ? placeholders.length
+                  ? `המשך סימון שדות (סומנו ${placeholders.length})`
+                  : "סמן שדות על המסמך"
+                : placeholders.length
+                  ? `Continue marking fields (${placeholders.length} marked)`
+                  : "Mark fields on the document"}
             </Button>
           )}
           <TemplateBuilder file={wordFile} open={builderOpen} onOpenChange={setBuilderOpen} onComplete={setWordFile} language={language} />
