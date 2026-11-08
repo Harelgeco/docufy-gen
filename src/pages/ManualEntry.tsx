@@ -9,13 +9,14 @@ import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import { translations, Language } from "@/lib/translations";
 import { UploadedImage } from "@/components/ImageUploader";
+import { useSharedWordFile } from "@/lib/wordFileStore";
 import { TemplateBuilder } from "@/components/TemplateBuilder";
 import { ReadyDocumentButton } from "@/components/ReadyDocumentButton";
 import { Button } from "@/components/ui/button";
 import { Wand2 } from "lucide-react";
 
 const ManualEntry = () => {
-  const [wordFile, setWordFile] = useState<File>();
+  const [wordFile, setWordFile] = useSharedWordFile();
   const [placeholders, setPlaceholders] = useState<string[]>([]);
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [images, setImages] = useState<UploadedImage[]>([]);
