@@ -12,8 +12,6 @@ import { UploadedImage } from "@/components/ImageUploader";
 import { useSharedWordFile } from "@/lib/wordFileStore";
 import { TemplateBuilder } from "@/components/TemplateBuilder";
 import { ReadyDocumentButton } from "@/components/ReadyDocumentButton";
-import { Button } from "@/components/ui/button";
-import { Wand2 } from "lucide-react";
 
 const ManualEntry = () => {
   const [wordFile, setWordFile] = useSharedWordFile();

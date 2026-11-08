@@ -14,8 +14,6 @@ import { translations, Language } from "@/lib/translations";
 import { useSharedWordFile } from "@/lib/wordFileStore";
 import { TemplateBuilder } from "@/components/TemplateBuilder";
 import { ReadyDocumentButton } from "@/components/ReadyDocumentButton";
-import { Button } from "@/components/ui/button";
-import { Wand2 } from "lucide-react";
 
 const Index = () => {
   const [excelFile, setExcelFile] = useState<File>();
