@@ -131,6 +131,8 @@ const Landing = () => {
             <a href="#how" className="hover:text-foreground">איך זה עובד</a>
             <Link to="/excel" className="hover:text-foreground">מצב Excel</Link>
             <Link to="/manual" className="hover:text-foreground">הזנה ידנית</Link>
+            <Link to="/privacy" className="hover:text-foreground">מדיניות פרטיות</Link>
+            <Link to="/terms" className="hover:text-foreground">תנאי שימוש</Link>
           </nav>
         </div>
       </footer>
