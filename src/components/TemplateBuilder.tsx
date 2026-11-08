@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Download, ArrowLeft, Tag, Undo2, HelpCircle } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ExampleTable } from "@/components/ExcelFormatGuide";
+import { ExampleTable, downloadExcelTemplate } from "@/components/ExcelFormatGuide";
 import { toast } from "sonner";
 import {
   openTemplateSession, listParagraphs, replaceInParagraph, replaceAll, findOccurrences,
@@ -298,6 +298,7 @@ export function TemplateBuilder({ file, open, onOpenChange, onComplete, language
             <p className="rounded border border-ring/40 bg-accent p-2 text-xs text-primary">💡 {t.dateTip}</p>
             <Button variant="ghost" size="sm" onClick={undo} disabled={!history.current.length}><Undo2 className="h-4 w-4" />{t.undo}</Button>
             <Button variant="outline" onClick={download} disabled={!fields.length}><Download className="h-4 w-4" />{t.download}</Button>
+            <Button variant="outline" onClick={() => downloadExcelTemplate(fields, language)} disabled={!fields.length}><Download className="h-4 w-4" />{language === "he" ? "הורד אקסל מוכן לשדות" : "Download matching Excel"}</Button>
             <Button size="lg" onClick={finish} disabled={!fields.length}>{t.continue}<ArrowLeft className={`h-4 w-4 ${language === "en" ? "rotate-180" : ""}`} /></Button>
           </aside>
         </div>
