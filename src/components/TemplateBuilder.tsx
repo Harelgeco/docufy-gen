@@ -285,9 +285,9 @@ export function TemplateBuilder({ file, open, onOpenChange, onComplete, language
               </div>
             )}
           </div>
-          <aside className="flex min-h-0 flex-col gap-3">
+          <aside className="flex min-h-0 flex-col gap-2">
             <h4 className="shrink-0 font-semibold">{t.fields} ({fields.length})</h4>
-            <div className="min-h-0 flex-1 overflow-auto space-y-2">
+            <div className="min-h-0 flex-1 overflow-auto space-y-1.5">
               <div className="space-y-1">
                 {fields.length === 0 && <p className="text-sm text-muted-foreground">{t.none}</p>}
                 {fields.map((f) => (
@@ -295,7 +295,7 @@ export function TemplateBuilder({ file, open, onOpenChange, onComplete, language
                 ))}
               </div>
               {TIPS[language].map((tip) => (
-                <div key={tip.text} className="flex items-start gap-1 rounded border border-ring/40 bg-accent p-2 text-xs text-primary">
+                <div key={tip.text} className="flex items-start gap-1 rounded border border-ring/40 bg-accent p-1.5 text-xs text-primary">
                   <span className="flex-1">💡 {tip.text}</span>
                   {tip.withExample && (
                     <Popover>
@@ -313,7 +313,7 @@ export function TemplateBuilder({ file, open, onOpenChange, onComplete, language
                 </div>
               ))}
             </div>
-            <div className="flex shrink-0 flex-col gap-2">
+            <div className="flex shrink-0 flex-col gap-1.5">
               <Button variant="ghost" size="sm" onClick={undo} disabled={!history.current.length}><Undo2 className="h-4 w-4" />{t.undo}</Button>
               <Button variant="outline" onClick={download} disabled={!fields.length}><Download className="h-4 w-4" />{t.download}</Button>
               <Button variant="outline" onClick={() => downloadExcelTemplate(fields, language)} disabled={!fields.length}><Download className="h-4 w-4" />{language === "he" ? "הורד אקסל מוכן לשדות" : "Download matching Excel"}</Button>
