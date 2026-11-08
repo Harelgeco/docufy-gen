@@ -14,6 +14,7 @@ import { translations, Language } from "@/lib/translations";
 import { useSharedWordFile } from "@/lib/wordFileStore";
 import { TemplateBuilder } from "@/components/TemplateBuilder";
 import { ReadyDocumentButton } from "@/components/ReadyDocumentButton";
+import { ExcelFormatGuide } from "@/components/ExcelFormatGuide";
 
 const Index = () => {
   const [excelFile, setExcelFile] = useState<File>();
@@ -270,14 +271,17 @@ const Index = () => {
 
         {/* File Upload Section */}
         <div className="grid md:grid-cols-2 gap-6 mb-12 items-start">
-          <FileUploader
+          <div>
+            <FileUploader
             title={t.uploadExcel}
             description={t.uploadExcelDesc}
             accept=".xlsx,.xls"
             onFileSelect={setExcelFile}
             selectedFile={excelFile}
             language={language}
-          />
+            />
+            <ExcelFormatGuide fields={wordPlaceholders} language={language} />
+          </div>
           <div>
             <FileUploader
               title={t.uploadWord}
