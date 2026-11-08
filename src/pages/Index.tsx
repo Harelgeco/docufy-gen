@@ -11,6 +11,9 @@ import { toast } from "sonner";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import { translations, Language } from "@/lib/translations";
+import { TemplateBuilder } from "@/components/TemplateBuilder";
+import { Button } from "@/components/ui/button";
+import { Wand2 } from "lucide-react";
 
 const Index = () => {
   const [excelFile, setExcelFile] = useState<File>();
@@ -18,6 +21,7 @@ const Index = () => {
   const [validatedExcelFile, setValidatedExcelFile] = useState<File>();
   const [validatedWordFile, setValidatedWordFile] = useState<File>();
   const nextStepRef = useRef<HTMLDivElement>(null);
+  const [builderOpen, setBuilderOpen] = useState(false);
   const lastScrolledFiles = useRef<[File, File]>();
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
   const [names, setNames] = useState<string[]>([]);
@@ -232,7 +236,7 @@ const Index = () => {
         setWordPlaceholders(uniquePlaceholders);
         toast.success(`Found ${uniquePlaceholders.length} placeholders in template`);
       } else {
-        toast.warning("No placeholders (<<field>>) found in Word template");
+        setBuilderOpen(true);
       }
     } catch (error) {
       console.error("Error parsing Word template:", error);
@@ -274,15 +278,24 @@ const Index = () => {
             selectedFile={excelFile}
             language={language}
           />
-          <FileUploader
-            title={t.uploadWord}
-            description={t.uploadWordDesc}
-            accept=".docx,.doc"
-            onFileSelect={setWordFile}
-            selectedFile={wordFile}
-            language={language}
-          />
+          <div>
+            <FileUploader
+              title={t.uploadWord}
+              description={t.uploadWordDesc}
+              accept=".docx,.doc"
+              onFileSelect={setWordFile}
+              selectedFile={wordFile}
+              language={language}
+            />
+            {wordFile && (
+              <Button variant="outline" className="mt-3 w-full" onClick={() => setBuilderOpen(true)}>
+                <Wand2 className="h-4 w-4" />
+                {language === "he" ? "סמן שדות על המסמך (הפוך לתבנית)" : "Mark fields on the document (make template)"}
+              </Button>
+            )}
+          </div>
         </div>
+        <TemplateBuilder file={wordFile} open={builderOpen} onOpenChange={setBuilderOpen} onComplete={setWordFile} language={language} />
 
         {/* Column Selection */}
         <div ref={nextStepRef} className="scroll-mt-6">

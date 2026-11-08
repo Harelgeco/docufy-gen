@@ -9,6 +9,9 @@ import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import { translations, Language } from "@/lib/translations";
 import { UploadedImage } from "@/components/ImageUploader";
+import { TemplateBuilder } from "@/components/TemplateBuilder";
+import { Button } from "@/components/ui/button";
+import { Wand2 } from "lucide-react";
 
 const ManualEntry = () => {
   const [wordFile, setWordFile] = useState<File>();
@@ -16,6 +19,7 @@ const ManualEntry = () => {
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [hasImagePlaceholder, setHasImagePlaceholder] = useState(false);
+  const [builderOpen, setBuilderOpen] = useState(false);
 
   const [language, setLanguage] = useState<Language>(() => {
     const saved = localStorage.getItem("preferred-language");
@@ -86,7 +90,7 @@ const ManualEntry = () => {
       } else {
         setPlaceholders([]);
         setFieldValues({});
-        toast.warning(t.noPlaceholders);
+        setBuilderOpen(true);
       }
     } catch (error) {
       console.error("Error parsing Word template:", error);
@@ -142,6 +146,13 @@ const ManualEntry = () => {
             selectedFile={wordFile}
             language={language}
           />
+          {wordFile && (
+            <Button variant="outline" className="mt-3 w-full" onClick={() => setBuilderOpen(true)}>
+              <Wand2 className="h-4 w-4" />
+              {language === "he" ? "סמן שדות על המסמך (הפוך לתבנית)" : "Mark fields on the document (make template)"}
+            </Button>
+          )}
+          <TemplateBuilder file={wordFile} open={builderOpen} onOpenChange={setBuilderOpen} onComplete={setWordFile} language={language} />
         </div>
 
         {/* Form and Preview */}
