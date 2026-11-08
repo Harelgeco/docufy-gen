@@ -273,7 +273,7 @@ const Index = () => {
         {/* File Upload Section */}
         <div className="grid md:grid-cols-2 gap-x-6 gap-y-2 mb-12 items-stretch">
             <FileUploader
-            className="order-1"
+            className="order-1 min-h-[336px]"
             title={t.uploadExcel}
             description={t.uploadExcelDesc}
             accept=".xlsx,.xls"
@@ -282,7 +282,7 @@ const Index = () => {
             language={language}
             />
             <FileUploader
-              className="order-3 md:order-2"
+              className="order-3 min-h-[336px] md:order-2"
               title={t.uploadWord}
               description={t.uploadWordDesc}
               accept=".docx,.doc"
