@@ -108,6 +108,18 @@ All colors MUST be HSL.
   }
 }
 
+/* Tip rotation in the template builder: each tip slides in from the inline start */
+@keyframes tip-slide-in {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes tip-slide-in-ltr {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.tip-slide { animation: tip-slide-in 0.35s ease-out; }
+[dir="ltr"] .tip-slide { animation-name: tip-slide-in-ltr; }
+
 /* Word documents rendered in preview/PDF keep their own picture sizes */
 section.docx-preview img, section.docx-wrapper img, section.docx-preview svg, section.docx-wrapper svg { max-width: none; max-height: none; }
 

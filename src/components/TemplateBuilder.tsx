@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Download, ArrowLeft, Tag, Undo2, HelpCircle, RefreshCw } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ExampleTable, downloadExcelTemplate } from "@/components/ExcelFormatGuide";
+import { ExampleTable } from "@/components/ExcelFormatGuide";
 import { toast } from "sonner";
 import {
   openTemplateSession, listParagraphs, replaceInParagraph, replaceAll, findOccurrences,
@@ -305,7 +305,7 @@ export function TemplateBuilder({ file, open, onOpenChange, onComplete, language
               </div>
             </div>
             <div className="flex shrink-0 items-start gap-1 rounded border border-ring/40 bg-accent p-1.5 text-xs text-primary">
-              <span className="flex-1">💡 {tip.text}</span>
+              <span key={tipIndex} className="tip-slide flex-1">💡 {tip.text}</span>
               {tip.withExample && (
                 <Popover>
                   <PopoverTrigger asChild>
@@ -336,7 +336,6 @@ export function TemplateBuilder({ file, open, onOpenChange, onComplete, language
                 <Button variant="ghost" size="sm" className="px-2" onClick={undo} disabled={!history.current.length}><Undo2 className="h-4 w-4" />{t.undo}</Button>
                 <Button variant="outline" size="sm" className="px-2" onClick={download} disabled={!fields.length}><Download className="h-4 w-4" />{t.download}</Button>
               </div>
-              <Button variant="outline" onClick={() => downloadExcelTemplate(fields, language)} disabled={!fields.length}><Download className="h-4 w-4" />{language === "he" ? "הורד אקסל מוכן לשדות" : "Download matching Excel"}</Button>
               <Button size="lg" onClick={finish} disabled={!fields.length}>{t.continue}<ArrowLeft className={`h-4 w-4 ${language === "en" ? "rotate-180" : ""}`} /></Button>
             </div>
           </aside>
