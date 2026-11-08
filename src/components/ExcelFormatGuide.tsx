@@ -54,6 +54,16 @@ export function ExcelFormatGuide({ fields, language }: { fields: string[]; langu
         <HelpCircle className="h-4 w-4" />
         {he ? "באיזה מבנה להעלות את האקסל?" : "How should the Excel look?"}
       </button>
+      {has && (
+        <button
+          type="button"
+          onClick={() => downloadExcelTemplate(fields, language)}
+          className="mt-1 flex w-full items-center justify-center gap-2 text-sm text-primary underline-offset-4 hover:underline"
+        >
+          <Download className="h-4 w-4" />
+          {he ? "הורד אקסל מוכן לשדות התבנית" : "Download a ready Excel for your fields"}
+        </button>
+      )}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl" dir={he ? "rtl" : "ltr"}>
           <DialogHeader>
