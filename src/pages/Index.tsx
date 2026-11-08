@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import { translations, Language } from "@/lib/translations";
+import { useSharedWordFile } from "@/lib/wordFileStore";
 import { TemplateBuilder } from "@/components/TemplateBuilder";
 import { ReadyDocumentButton } from "@/components/ReadyDocumentButton";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,7 @@ import { Wand2 } from "lucide-react";
 
 const Index = () => {
   const [excelFile, setExcelFile] = useState<File>();
-  const [wordFile, setWordFile] = useState<File>();
+  const [wordFile, setWordFile] = useSharedWordFile();
   const [validatedExcelFile, setValidatedExcelFile] = useState<File>();
   const [validatedWordFile, setValidatedWordFile] = useState<File>();
   const nextStepRef = useRef<HTMLDivElement>(null);
