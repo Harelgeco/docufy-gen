@@ -15,6 +15,7 @@ import { useSharedWordFile } from "@/lib/wordFileStore";
 import { TemplateBuilder } from "@/components/TemplateBuilder";
 import { ReadyDocumentButton } from "@/components/ReadyDocumentButton";
 import { ExcelFormatGuide } from "@/components/ExcelFormatGuide";
+import { excelHeaderIndex } from "@/lib/excelTemplate";
 
 const Index = () => {
   const [excelFile, setExcelFile] = useState<File>();
@@ -111,8 +112,8 @@ const Index = () => {
         return;
       }
       
-      // Skip first 5 rows (project title info), row 6 (index 5) has headers
-      const headerRow = jsonData[5] || jsonData[0];
+      const headerIndex = excelHeaderIndex(jsonData);
+      const headerRow = jsonData[headerIndex];
 
       // Normalize header text: preserve structure but clean up
       const normalize = (val: any) => {
@@ -152,7 +153,7 @@ const Index = () => {
       setExcelHeaders(headers);
       
       // Determine data start row
-      const startIndex = jsonData[5] ? 6 : 1;
+      const startIndex = headerIndex + 1;
 
       // Store all data rows starting from data start
       const dataRows = jsonData.slice(startIndex).map((row: any, rowIndex: number) => {
@@ -270,9 +271,9 @@ const Index = () => {
         </div>
 
         {/* File Upload Section */}
-        <div className="grid md:grid-cols-2 gap-6 mb-12 items-start">
-          <div>
+        <div className="grid md:grid-cols-2 gap-x-6 gap-y-2 mb-12 items-stretch">
             <FileUploader
+            className="order-1"
             title={t.uploadExcel}
             description={t.uploadExcelDesc}
             accept=".xlsx,.xls"
@@ -280,10 +281,8 @@ const Index = () => {
             selectedFile={excelFile}
             language={language}
             />
-            <ExcelFormatGuide fields={wordPlaceholders} language={language} />
-          </div>
-          <div>
             <FileUploader
+              className="order-3 md:order-2"
               title={t.uploadWord}
               description={t.uploadWordDesc}
               accept=".docx,.doc"
@@ -301,6 +300,10 @@ const Index = () => {
                     : "Mark fields on the document"
               }
             />
+          <div className="order-2 md:order-3">
+            <ExcelFormatGuide fields={wordPlaceholders} language={language} />
+          </div>
+          <div className="order-4">
             <ReadyDocumentButton language={language} onPick={(f) => { setWordFile(f); setBuilderOpen(true); }} />
           </div>
         </div>
