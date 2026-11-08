@@ -285,33 +285,40 @@ export function TemplateBuilder({ file, open, onOpenChange, onComplete, language
               </div>
             )}
           </div>
-          <aside className="flex flex-col gap-3 min-h-0">
-            <h4 className="font-semibold">{t.fields} ({fields.length})</h4>
-            <div className="flex-1 overflow-auto space-y-1">
-              {fields.length === 0 && <p className="text-sm text-muted-foreground">{t.none}</p>}
-              {fields.map((f) => (
-                <div key={f} className="rounded border bg-accent px-2 py-1 text-sm text-primary">&lt;&lt;{f}&gt;&gt;</div>
+          <aside className="flex min-h-0 flex-col gap-3">
+            <h4 className="shrink-0 font-semibold">{t.fields} ({fields.length})</h4>
+            <div className="min-h-0 flex-1 overflow-auto space-y-2">
+              <div className="space-y-1">
+                {fields.length === 0 && <p className="text-sm text-muted-foreground">{t.none}</p>}
+                {fields.map((f) => (
+                  <div key={f} className="rounded border bg-accent px-2 py-1 text-sm text-primary">&lt;&lt;{f}&gt;&gt;</div>
+                ))}
+              </div>
+              {TIPS[language].map((tip) => (
+                <div key={tip.text} className="flex items-start gap-1 rounded border border-ring/40 bg-accent p-2 text-xs text-primary">
+                  <span className="flex-1">💡 {tip.text}</span>
+                  {tip.withExample && (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button type="button" aria-label={language === "he" ? "הצג דוגמה" : "Show example"} className="shrink-0 rounded-full hover:text-ring"><HelpCircle className="h-4 w-4" /></button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80 space-y-2" dir={language === "he" ? "rtl" : "ltr"}>
+                        <p className="text-xs font-medium">{language === "he" ? "במסמך הוורד:" : "In the Word document:"}</p>
+                        <p className="rounded border bg-card p-2 text-sm">{language === "he" ? "ברכות " : "Greetings "}<span className="rounded bg-accent px-1 font-semibold text-primary">&lt;&lt;{(fields[0] ?? (language === "he" ? "שם מלא" : "Full name"))}&gt;&gt;</span></p>
+                        <p className="text-xs font-medium">{language === "he" ? "בקובץ האקסל (כותרת העמודה):" : "In the Excel file (column header):"}</p>
+                        <ExampleTable headers={[fields[0] ?? (language === "he" ? "שם מלא" : "Full name")]} rows={[[language === "he" ? "ישראל ישראלי" : "Jane Doe"], [language === "he" ? "דנה כהן" : "John Smith"]]} />
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                </div>
               ))}
             </div>
-            <div className="flex items-start gap-1 rounded border border-ring/40 bg-accent p-2 text-xs text-primary">
-              <span className="flex-1">💡 {language === "he" ? "שמות השדות יהיו הכותרות של העמודות בקובץ האקסל." : "Field names become the column headers in your Excel file."}</span>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button type="button" aria-label={language === "he" ? "הצג דוגמה" : "Show example"} className="shrink-0 rounded-full hover:text-ring"><HelpCircle className="h-4 w-4" /></button>
-                </PopoverTrigger>
-                <PopoverContent className="w-80 space-y-2" dir={language === "he" ? "rtl" : "ltr"}>
-                  <p className="text-xs font-medium">{language === "he" ? "במסמך הוורד:" : "In the Word document:"}</p>
-                  <p className="rounded border bg-card p-2 text-sm">{language === "he" ? "ברכות " : "Greetings "}<span className="rounded bg-accent px-1 font-semibold text-primary">&lt;&lt;{(fields[0] ?? (language === "he" ? "שם מלא" : "Full name"))}&gt;&gt;</span></p>
-                  <p className="text-xs font-medium">{language === "he" ? "בקובץ האקסל (כותרת העמודה):" : "In the Excel file (column header):"}</p>
-                  <ExampleTable headers={[fields[0] ?? (language === "he" ? "שם מלא" : "Full name")]} rows={[[language === "he" ? "ישראל ישראלי" : "Jane Doe"], [language === "he" ? "דנה כהן" : "John Smith"]]} />
-                </PopoverContent>
-              </Popover>
+            <div className="flex shrink-0 flex-col gap-2">
+              <Button variant="ghost" size="sm" onClick={undo} disabled={!history.current.length}><Undo2 className="h-4 w-4" />{t.undo}</Button>
+              <Button variant="outline" onClick={download} disabled={!fields.length}><Download className="h-4 w-4" />{t.download}</Button>
+              <Button variant="outline" onClick={() => downloadExcelTemplate(fields, language)} disabled={!fields.length}><Download className="h-4 w-4" />{language === "he" ? "הורד אקסל מוכן לשדות" : "Download matching Excel"}</Button>
+              <Button size="lg" onClick={finish} disabled={!fields.length}>{t.continue}<ArrowLeft className={`h-4 w-4 ${language === "en" ? "rotate-180" : ""}`} /></Button>
             </div>
-            <p className="rounded border border-ring/40 bg-accent p-2 text-xs text-primary">💡 {t.dateTip}</p>
-            <Button variant="ghost" size="sm" onClick={undo} disabled={!history.current.length}><Undo2 className="h-4 w-4" />{t.undo}</Button>
-            <Button variant="outline" onClick={download} disabled={!fields.length}><Download className="h-4 w-4" />{t.download}</Button>
-            <Button variant="outline" onClick={() => downloadExcelTemplate(fields, language)} disabled={!fields.length}><Download className="h-4 w-4" />{language === "he" ? "הורד אקסל מוכן לשדות" : "Download matching Excel"}</Button>
-            <Button size="lg" onClick={finish} disabled={!fields.length}>{t.continue}<ArrowLeft className={`h-4 w-4 ${language === "en" ? "rotate-180" : ""}`} /></Button>
           </aside>
         </div>
       </DialogContent>
