@@ -139,3 +139,18 @@ section.docx-preview img, section.docx-wrapper img, section.docx-preview svg, se
     .page-wash { background-size: 100% 900px; }
   }
 }
+
+/* Free-trial walkthrough: rotating light around the highlighted upload box */
+@property --tour-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+.tour-glow { position: relative; isolation: isolate; }
+.tour-glow::before {
+  content: ""; position: absolute; inset: -3px; z-index: -1; border-radius: calc(var(--radius) + 3px);
+  background: conic-gradient(from var(--tour-angle), transparent 0deg, transparent 220deg, hsl(var(--ring)) 300deg, hsl(var(--primary)) 340deg, transparent 360deg);
+  animation: tour-spin 2.8s linear infinite;
+}
+@keyframes tour-spin { to { --tour-angle: 360deg; } }
+.tour-hint-in { animation: tour-hint-in 0.45s ease-out both; }
+@keyframes tour-hint-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.fixed.tour-hint-in { animation-name: tour-hint-in-fixed; }
+@keyframes tour-hint-in-fixed { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@media (prefers-reduced-motion: reduce) { .tour-glow::before { animation: none; background: hsl(var(--ring)); } .tour-hint-in { animation: none; } }

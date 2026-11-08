@@ -39,8 +39,8 @@ const Landing = () => {
     reduce ? {} : { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.4, delay } };
 
   const StartButton = ({ className = "" }: { className?: string }) => (
-    <Button size="lg" className={`h-12 min-w-44 px-8 text-base gap-2 ${className}`} onClick={() => openAuth("signup")}>
-      התחל עכשיו <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+    <Button size="lg" className={`h-12 min-w-44 px-8 text-base gap-2 ${className}`} onClick={() => navigate("/excel?tour=1")}>
+      נסו בחינם <ArrowLeft className="w-4 h-4" aria-hidden="true" />
     </Button>
   );
 
@@ -118,7 +118,7 @@ const Landing = () => {
             <h2 className="text-2xl md:text-3xl font-bold">מוכנים להפסיק להקליד את אותם פרטים שוב?</h2>
             <p className="mt-3 opacity-85">מעלים תבנית ונתונים ומתחילים.</p>
             <Button size="lg" variant="secondary" className="mt-8 h-12 min-w-44 px-8 text-base gap-2" onClick={() => openAuth("signup")}>
-              התחל עכשיו <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+              נסו בחינם <ArrowLeft className="w-4 h-4" aria-hidden="true" />
             </Button>
           </div>
         </section>

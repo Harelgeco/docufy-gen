@@ -16,6 +16,10 @@ import { TemplateBuilder } from "@/components/TemplateBuilder";
 import { ReadyDocumentButton } from "@/components/ReadyDocumentButton";
 import { ExcelFormatGuide } from "@/components/ExcelFormatGuide";
 import { excelHeaderIndex } from "@/lib/excelTemplate";
+import { TourHint } from "@/components/TourHint";
+import { createSampleDocx } from "@/lib/sampleDocx";
+import { Button } from "@/components/ui/button";
+import { useSearchParams } from "react-router-dom";
 
 const Index = () => {
   const [excelFile, setExcelFile] = useState<File>();
@@ -36,6 +40,11 @@ const Index = () => {
     return (saved === "he" || saved === "en") ? saved : "he";
   });
   const t = translations[language];
+  const [params] = useSearchParams();
+  const [tourOn, setTourOn] = useState(() => params.get("tour") === "1" && localStorage.getItem("tour-done") !== "1");
+  const endTour = () => { setTourOn(false); localStorage.setItem("tour-done", "1"); };
+  useEffect(() => { if (tourOn && excelFile) endTour(); }, [tourOn, excelFile]);
+  const tourStep = !tourOn ? null : !wordFile ? "word" : builderOpen ? (wordPlaceholders.length ? "marked" : "mark") : wordPlaceholders.length && !excelFile ? "excel" : null;
 
   // Save language preference
   useEffect(() => {
@@ -270,10 +279,26 @@ const Index = () => {
           </p>
         </div>
 
+        {tourStep === "word" && (
+          <TourHint className="mb-4 max-w-2xl mx-auto" title="העלו מסמך Word מוכן משלכם — או התנסו במסמך לדוגמה, וערכו אותו בעצמכם!" onClose={endTour}>
+            <Button size="sm" className="mt-1" onClick={() => { setWordFile(createSampleDocx()); setBuilderOpen(true); }}>טען מסמך לדוגמה</Button>
+          </TourHint>
+        )}
+        {tourStep === "excel" && (
+          <TourHint className="mb-4 max-w-2xl mx-auto" title="עכשיו העלו קובץ אקסל ששמות השדות שלכם בכותרות שלו" onClose={endTour}>
+            אפשר ללחוץ על "באיזה מבנה להעלות את האקסל?" כדי לראות דוגמה, או להוריד אקסל מוכן לפי השדות שסימנתם ולמלא אותו.
+          </TourHint>
+        )}
+        {(tourStep === "mark" || tourStep === "marked") && (
+          <TourHint floating title={tourStep === "mark" ? "לחצו לחיצה כפולה על מילה (או סמנו אותה בעכבר) ותנו לה שם שדה" : "מעולה! סמנו עוד שדות, או לחצו \"המשך להפקת מסמכים\""} onClose={endTour}>
+            {tourStep === "mark" ? "למשל: סמנו \"ישראל ישראלי\" וקראו לשדה \"שם מלא\"." : undefined}
+          </TourHint>
+        )}
+
         {/* File Upload Section */}
         <div className="grid md:grid-cols-2 gap-x-6 gap-y-2 mb-12 items-stretch">
             <FileUploader
-            className="order-1 min-h-[336px]"
+            className={`order-1 min-h-[336px] ${tourStep === "excel" ? "tour-glow" : ""}`}
             title={t.uploadExcel}
             description={t.uploadExcelDesc}
             accept=".xlsx,.xls"
@@ -282,7 +307,7 @@ const Index = () => {
             language={language}
             />
             <FileUploader
-              className="order-3 min-h-[336px] md:order-2"
+              className={`order-3 min-h-[336px] md:order-2 ${tourStep === "word" ? "tour-glow" : ""}`}
               title={t.uploadWord}
               description={t.uploadWordDesc}
               accept=".docx,.doc"
