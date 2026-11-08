@@ -13,6 +13,7 @@ interface FileUploaderProps {
   /** Shown under the file name when the file can be edited in place. */
   onEditFile?: () => void;
   editLabel?: string;
+  className?: string;
 }
 
 export const FileUploader = ({
@@ -24,6 +25,7 @@ export const FileUploader = ({
   language,
   onEditFile,
   editLabel,
+  className = "",
 }: FileUploaderProps) => {
   const t = translations[language];
   const [dragDepth, setDragDepth] = useState(0);
@@ -53,7 +55,7 @@ export const FileUploader = ({
       }}
       onDragLeave={() => setDragDepth((d) => Math.max(0, d - 1))}
       onDrop={handleDrop}
-      className={`p-8 border border-solid transition-all duration-200 ${
+      className={`p-8 border border-solid transition-all duration-200 ${className} ${
         isDragging
           ? "border-primary bg-primary/10 scale-[1.02] shadow-lg ring-4 ring-primary/20"
           : "bg-dropzone border-dropzone-border hover:border-gold"
@@ -77,19 +79,19 @@ export const FileUploader = ({
               : description}
           </p>
         </div>
-        <label className="cursor-pointer">
+        <label className="cursor-pointer max-w-full">
           <input
             type="file"
             accept={accept}
             onChange={handleFileInput}
             className="hidden"
           />
-          <div className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium">
+          <div className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium break-all text-center">
             {selectedFile ? selectedFile.name : t.chooseFile}
           </div>
         </label>
         {selectedFile && (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground break-all text-center">
             {t.fileSelected} {selectedFile.name}
           </p>
         )}

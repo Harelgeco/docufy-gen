@@ -65,10 +65,12 @@ const TIPS: { he: Tip[]; en: Tip[] } = {
   he: [
     { text: "שמות השדות יהיו הכותרות של העמודות בקובץ האקסל.", withExample: true },
     { text: 'סמנו תאריך וקראו לשדה "תאריך נוכחי" — היום ימולא לבד.' },
+    { text: "התוכנה מייצרת לכם אקסל מותאם לשדות שבחרתם. תוכלו להוריד אותו בחלון הבא, באזור העלאת האקסל." },
   ],
   en: [
     { text: "Field names become the column headers in your Excel file.", withExample: true },
     { text: 'Select a date and name it "תאריך נוכחי" — today fills in automatically.' },
+    { text: "A personalized Excel is created for your fields. Download it in the next window, in the Excel upload area." },
   ],
 };
 
