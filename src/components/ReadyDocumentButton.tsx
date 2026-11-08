@@ -14,6 +14,7 @@ export function ReadyDocumentButton({ language, onPick }: Props) {
     <>
       <button
         type="button"
+        dir={he ? "rtl" : "ltr"}
         onClick={() => ref.current?.click()}
         className="mt-3 flex w-full items-center gap-3 rounded-lg border border-dashed border-ring/50 bg-accent/50 p-3 text-start transition-colors hover:bg-accent"
       >
