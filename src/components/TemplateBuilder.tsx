@@ -2,7 +2,9 @@ import { useEffect, useRef, useState, Fragment } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Download, ArrowLeft, Tag, Undo2 } from "lucide-react";
+import { Download, ArrowLeft, Tag, Undo2, HelpCircle } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ExampleTable } from "@/components/ExcelFormatGuide";
 import { toast } from "sonner";
 import {
   openTemplateSession, listParagraphs, replaceInParagraph, replaceAll, findOccurrences,
@@ -278,6 +280,20 @@ export function TemplateBuilder({ file, open, onOpenChange, onComplete, language
               {fields.map((f) => (
                 <div key={f} className="rounded border bg-accent px-2 py-1 text-sm text-primary">&lt;&lt;{f}&gt;&gt;</div>
               ))}
+            </div>
+            <div className="flex items-start gap-1 rounded border border-ring/40 bg-accent p-2 text-xs text-primary">
+              <span className="flex-1">💡 {language === "he" ? "שמות השדות יהיו הכותרות של העמודות בקובץ האקסל." : "Field names become the column headers in your Excel file."}</span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button type="button" aria-label={language === "he" ? "הצג דוגמה" : "Show example"} className="shrink-0 rounded-full hover:text-ring"><HelpCircle className="h-4 w-4" /></button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 space-y-2" dir={language === "he" ? "rtl" : "ltr"}>
+                  <p className="text-xs font-medium">{language === "he" ? "במסמך הוורד:" : "In the Word document:"}</p>
+                  <p className="rounded border bg-card p-2 text-sm">{language === "he" ? "ברכות " : "Greetings "}<span className="rounded bg-accent px-1 font-semibold text-primary">&lt;&lt;{(fields[0] ?? (language === "he" ? "שם מלא" : "Full name"))}&gt;&gt;</span></p>
+                  <p className="text-xs font-medium">{language === "he" ? "בקובץ האקסל (כותרת העמודה):" : "In the Excel file (column header):"}</p>
+                  <ExampleTable headers={[fields[0] ?? (language === "he" ? "שם מלא" : "Full name")]} rows={[[language === "he" ? "ישראל ישראלי" : "Jane Doe"], [language === "he" ? "דנה כהן" : "John Smith"]]} />
+                </PopoverContent>
+              </Popover>
             </div>
             <p className="rounded border border-ring/40 bg-accent p-2 text-xs text-primary">💡 {t.dateTip}</p>
             <Button variant="ghost" size="sm" onClick={undo} disabled={!history.current.length}><Undo2 className="h-4 w-4" />{t.undo}</Button>
