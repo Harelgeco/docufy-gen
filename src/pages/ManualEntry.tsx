@@ -10,6 +10,7 @@ import PizZip from "pizzip";
 import { translations, Language } from "@/lib/translations";
 import { UploadedImage } from "@/components/ImageUploader";
 import { TemplateBuilder } from "@/components/TemplateBuilder";
+import { ReadyDocumentButton } from "@/components/ReadyDocumentButton";
 import { Button } from "@/components/ui/button";
 import { Wand2 } from "lucide-react";
 
@@ -146,6 +147,7 @@ const ManualEntry = () => {
             selectedFile={wordFile}
             language={language}
           />
+          <ReadyDocumentButton language={language} onPick={(f) => { setWordFile(f); setBuilderOpen(true); }} />
           {wordFile && (
             <Button variant="outline" className="mt-3 w-full" onClick={() => setBuilderOpen(true)}>
               <Wand2 className="h-4 w-4" />
