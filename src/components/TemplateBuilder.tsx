@@ -209,6 +209,14 @@ export function TemplateBuilder({ file, open, onOpenChange, onComplete, language
 
   const occurrences = pending && session ? findOccurrences(session, pending.text).length : 0;
 
+  // Rotate through the tips automatically; the arrows let the user flip manually.
+  useEffect(() => {
+    if (TIPS[language].length < 2) return;
+    const id = setInterval(() => setTipIndex((i) => (i + 1) % TIPS[language].length), 7000);
+    return () => clearInterval(id);
+  }, [language]);
+  const tip = TIPS[language][tipIndex % TIPS[language].length];
+
   const renderText = (text: string) =>
     text.split(/(<<[^<>]+>>)/g).map((chunk, i) =>
       /^<<[^<>]+>>$/.test(chunk) ? (
