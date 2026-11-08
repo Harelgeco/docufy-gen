@@ -146,6 +146,10 @@ section.docx-preview img, section.docx-wrapper img, section.docx-preview svg, se
 .tour-glow::before {
   content: ""; position: absolute; inset: -3px; z-index: -1; border-radius: calc(var(--radius) + 3px);
   background: conic-gradient(from var(--tour-angle), transparent 0deg, transparent 220deg, hsl(var(--ring)) 300deg, hsl(var(--primary)) 340deg, transparent 360deg);
+  padding: 3px;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
   animation: tour-spin 2.8s linear infinite;
 }
 @keyframes tour-spin { to { --tour-angle: 360deg; } }

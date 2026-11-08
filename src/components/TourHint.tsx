@@ -18,7 +18,7 @@ export function TourHint({ title, children, onClose, floating, className }: Prop
       role="status"
       className={cn(
         "tour-hint-in flex items-start gap-3 rounded-xl border border-ring/40 bg-card p-4 text-card-foreground shadow-lg",
-        floating && "fixed bottom-4 left-1/2 z-[60] w-[min(92vw,460px)] -translate-x-1/2",
+        floating && "pointer-events-auto fixed bottom-4 left-1/2 z-[60] w-[min(92vw,460px)] -translate-x-1/2",
         className,
       )}
     >
