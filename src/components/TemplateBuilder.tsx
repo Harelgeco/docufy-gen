@@ -262,7 +262,7 @@ export function TemplateBuilder({ file, open, onOpenChange, onComplete, language
             {pending && (
               <div
                 className="absolute z-10 w-72 -translate-x-1/2 rounded-md border bg-popover p-3 shadow-lg space-y-2"
-                style={{ left: Math.max(150, pending.x), top: pending.y }}
+                style={{ left: Math.min(Math.max(150, pending.x), (paperRef.current?.clientWidth ?? 600) - 150), top: pending.y }}
                 onMouseUp={(e) => e.stopPropagation()}
               >
                 <div className="text-xs text-muted-foreground truncate">“{pending.text}”</div>
