@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, Fragment } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Download, ArrowLeft, Tag, Undo2, HelpCircle } from "lucide-react";
+import { Download, ArrowLeft, Tag, Undo2, HelpCircle, RefreshCw } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ExampleTable, downloadExcelTemplate } from "@/components/ExcelFormatGuide";
 import { toast } from "sonner";
@@ -89,6 +89,7 @@ export function TemplateBuilder({ file, open, onOpenChange, onComplete, language
   const [pending, setPending] = useState<Pending>();
   const [name, setName] = useState("");
   const [fields, setFields] = useState<string[]>([]);
+  const [tipIndex, setTipIndex] = useState(0);
   const history = useRef<ArrayBuffer[]>([]);
   const fileRef = useRef<File>();
   const paperRef = useRef<HTMLDivElement>(null);
