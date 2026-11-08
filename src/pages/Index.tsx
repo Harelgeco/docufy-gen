@@ -296,6 +296,7 @@ const Index = () => {
         )}
 
         {/* File Upload Section */}
+        <PrivacyBadge className="mb-4" />
         <div className="grid md:grid-cols-2 gap-x-6 gap-y-2 mb-12 items-stretch">
             <FileUploader
             className={`order-1 min-h-[336px] ${tourStep === "excel" ? "tour-glow" : ""}`}

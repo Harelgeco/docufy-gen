@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import ManualEntry from "./pages/ManualEntry";
 import NotFound from "./pages/NotFound";
+import LegalPage from "./pages/LegalPage";
 import { lazy, Suspense } from "react";
 const Admin = lazy(() => import("./pages/Admin"));
 
@@ -22,6 +23,8 @@ const App = () => (
           <Route path="/" element={<Landing />} />
           <Route path="/excel" element={<Index />} />
           <Route path="/manual" element={<ManualEntry />} />
+          <Route path="/privacy" element={<LegalPage kind="privacy" />} />
+          <Route path="/terms" element={<LegalPage kind="terms" />} />
           <Route path="/admin" element={<Suspense fallback={null}><Admin /></Suspense>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

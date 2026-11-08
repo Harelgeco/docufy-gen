@@ -12,6 +12,7 @@ import { UploadedImage } from "@/components/ImageUploader";
 import { useSharedWordFile } from "@/lib/wordFileStore";
 import { TemplateBuilder } from "@/components/TemplateBuilder";
 import { ReadyDocumentButton } from "@/components/ReadyDocumentButton";
+import { PrivacyBadge } from "@/components/PrivacyBadge";
 
 const ManualEntry = () => {
   const [wordFile, setWordFile] = useSharedWordFile();
@@ -138,6 +139,7 @@ const ManualEntry = () => {
 
         {/* Template Upload */}
         <div className="max-w-xl mx-auto mb-12">
+          <PrivacyBadge className="mb-4" />
           <FileUploader
             title={t.uploadWord}
             description={t.uploadWordDesc}
