@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Upload } from "lucide-react";
+import { Upload, Wand2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { translations, Language } from "@/lib/translations";
 
@@ -10,6 +10,9 @@ interface FileUploaderProps {
   onFileSelect: (file: File) => void;
   selectedFile?: File;
   language: Language;
+  /** Shown under the file name when the file can be edited in place. */
+  onEditFile?: () => void;
+  editLabel?: string;
 }
 
 export const FileUploader = ({
@@ -19,6 +22,8 @@ export const FileUploader = ({
   onFileSelect,
   selectedFile,
   language,
+  onEditFile,
+  editLabel,
 }: FileUploaderProps) => {
   const t = translations[language];
   const [dragDepth, setDragDepth] = useState(0);
@@ -87,6 +92,16 @@ export const FileUploader = ({
           <p className="text-xs text-muted-foreground">
             {t.fileSelected} {selectedFile.name}
           </p>
+        )}
+        {selectedFile && onEditFile && (
+          <button
+            type="button"
+            onClick={onEditFile}
+            className="inline-flex items-center gap-1.5 rounded-md border border-primary/40 bg-accent/60 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-accent"
+          >
+            <Wand2 className="h-3.5 w-3.5" />
+            {editLabel}
+          </button>
         )}
       </div>
     </Card>
