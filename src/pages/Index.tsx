@@ -270,7 +270,7 @@ const Index = () => {
         </div>
 
         {/* File Upload Section */}
-        <div className="grid md:grid-cols-2 gap-6 mb-12">
+        <div className="grid md:grid-cols-2 gap-6 mb-12 items-start">
           <FileUploader
             title={t.uploadExcel}
             description={t.uploadExcelDesc}
