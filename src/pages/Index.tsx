@@ -299,7 +299,7 @@ const Index = () => {
                 <Wand2 className="h-4 w-4" />
                 {language === "he"
                   ? wordPlaceholders.length
-                    ? `המשך סימון שדות (${wordPlaceholders.length} שדותסומנו)`
+                    ? `המשך סימון שדות (סומנו ${wordPlaceholders.length})`
                     : "סמן שדות על המסמך"
                   : wordPlaceholders.length
                     ? `Continue marking fields (${wordPlaceholders.length} marked)`

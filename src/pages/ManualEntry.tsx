@@ -158,7 +158,7 @@ const ManualEntry = () => {
               <Wand2 className="h-4 w-4" />
               {language === "he"
                 ? placeholders.length
-                  ? `המשך סימון שדות (${placeholders.length} שדותסומנו)`
+                  ? `המשך סימון שדות (סומנו ${placeholders.length})`
                   : "סמן שדות על המסמך"
                 : placeholders.length
                   ? `Continue marking fields (${placeholders.length} marked)`
