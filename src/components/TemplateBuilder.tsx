@@ -303,28 +303,39 @@ export function TemplateBuilder({ file, open, onOpenChange, onComplete, language
                   <div key={f} className="rounded border bg-accent px-2 py-1 text-sm text-primary">&lt;&lt;{f}&gt;&gt;</div>
                 ))}
               </div>
-              {TIPS[language].map((tip) => (
-                <div key={tip.text} className="flex items-start gap-1 rounded border border-ring/40 bg-accent p-1.5 text-xs text-primary">
-                  <span className="flex-1">💡 {tip.text}</span>
-                  {tip.withExample && (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button type="button" aria-label={language === "he" ? "הצג דוגמה" : "Show example"} className="shrink-0 rounded-full hover:text-ring"><HelpCircle className="h-4 w-4" /></button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-80 space-y-2" dir={language === "he" ? "rtl" : "ltr"}>
-                        <p className="text-xs font-medium">{language === "he" ? "במסמך הוורד:" : "In the Word document:"}</p>
-                        <p className="rounded border bg-card p-2 text-sm">{language === "he" ? "ברכות " : "Greetings "}<span className="rounded bg-accent px-1 font-semibold text-primary">&lt;&lt;{(fields[0] ?? (language === "he" ? "שם מלא" : "Full name"))}&gt;&gt;</span></p>
-                        <p className="text-xs font-medium">{language === "he" ? "בקובץ האקסל (כותרת העמודה):" : "In the Excel file (column header):"}</p>
-                        <ExampleTable headers={[fields[0] ?? (language === "he" ? "שם מלא" : "Full name")]} rows={[[language === "he" ? "ישראל ישראלי" : "Jane Doe"], [language === "he" ? "דנה כהן" : "John Smith"]]} />
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                </div>
-              ))}
+            </div>
+            <div className="flex shrink-0 items-start gap-1 rounded border border-ring/40 bg-accent p-1.5 text-xs text-primary">
+              <span className="flex-1">💡 {tip.text}</span>
+              {tip.withExample && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button type="button" aria-label={language === "he" ? "הצג דוגמה" : "Show example"} className="shrink-0 rounded-full hover:text-ring"><HelpCircle className="h-4 w-4" /></button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80 space-y-2" dir={language === "he" ? "rtl" : "ltr"}>
+                    <p className="text-xs font-medium">{language === "he" ? "במסמך הוורד:" : "In the Word document:"}</p>
+                    <p className="rounded border bg-card p-2 text-sm">{language === "he" ? "ברכות " : "Greetings "}<span className="rounded bg-accent px-1 font-semibold text-primary">&lt;&lt;{(fields[0] ?? (language === "he" ? "שם מלא" : "Full name"))}&gt;&gt;</span></p>
+                    <p className="text-xs font-medium">{language === "he" ? "בקובץ האקסל (כותרת העמודה):" : "In the Excel file (column header):"}</p>
+                    <ExampleTable headers={[fields[0] ?? (language === "he" ? "שם מלא" : "Full name")]} rows={[[language === "he" ? "ישראל ישראלי" : "Jane Doe"], [language === "he" ? "דנה כהן" : "John Smith"]]} />
+                  </PopoverContent>
+                </Popover>
+              )}
+              {TIPS[language].length > 1 && (
+                <button
+                  type="button"
+                  aria-label={language === "he" ? "טיפ הבא" : "Next tip"}
+                  title={language === "he" ? "טיפ הבא" : "Next tip"}
+                  onClick={() => setTipIndex((i) => (i + 1) % TIPS[language].length)}
+                  className="shrink-0 rounded-full hover:text-ring"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
             <div className="flex shrink-0 flex-col gap-1.5">
-              <Button variant="ghost" size="sm" onClick={undo} disabled={!history.current.length}><Undo2 className="h-4 w-4" />{t.undo}</Button>
-              <Button variant="outline" onClick={download} disabled={!fields.length}><Download className="h-4 w-4" />{t.download}</Button>
+              <div className="grid grid-cols-2 gap-1.5">
+                <Button variant="ghost" size="sm" className="px-2" onClick={undo} disabled={!history.current.length}><Undo2 className="h-4 w-4" />{t.undo}</Button>
+                <Button variant="outline" size="sm" className="px-2" onClick={download} disabled={!fields.length}><Download className="h-4 w-4" />{t.download}</Button>
+              </div>
               <Button variant="outline" onClick={() => downloadExcelTemplate(fields, language)} disabled={!fields.length}><Download className="h-4 w-4" />{language === "he" ? "הורד אקסל מוכן לשדות" : "Download matching Excel"}</Button>
               <Button size="lg" onClick={finish} disabled={!fields.length}>{t.continue}<ArrowLeft className={`h-4 w-4 ${language === "en" ? "rotate-180" : ""}`} /></Button>
             </div>
