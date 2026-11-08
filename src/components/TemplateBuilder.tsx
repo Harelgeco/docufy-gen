@@ -64,11 +64,11 @@ const T = {
 const TIPS: { he: Tip[]; en: Tip[] } = {
   he: [
     { text: "שמות השדות יהיו הכותרות של העמודות בקובץ האקסל.", withExample: true },
-    { text: 'סמנו את תאריך המסמך וקראו לשדה "תאריך נוכחי" — התאריך של היום ימולא אוטומטית.' },
+    { text: 'סמנו תאריך וקראו לשדה "תאריך נוכחי" — היום ימולא לבד.' },
   ],
   en: [
     { text: "Field names become the column headers in your Excel file.", withExample: true },
-    { text: 'Select the document date and name the field "תאריך נוכחי" — today\'s date fills in automatically.' },
+    { text: 'Select a date and name it "תאריך נוכחי" — today fills in automatically.' },
   ],
 };
 
