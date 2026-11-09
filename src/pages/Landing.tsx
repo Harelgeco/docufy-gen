@@ -1,3 +1,4 @@
+import { SiteFooter } from "@/components/SiteFooter";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
@@ -124,18 +125,7 @@ const Landing = () => {
         </section>
       </main>
 
-      <footer className="border-t border-border">
-        <div className="container mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-          <span>© {new Date().getFullYear()} מחולל מסמכים</span>
-          <nav aria-label="קישורים" className="flex gap-4">
-            <a href="#how" className="hover:text-foreground">איך זה עובד</a>
-            <Link to="/excel" className="hover:text-foreground">מצב Excel</Link>
-            <Link to="/manual" className="hover:text-foreground">הזנה ידנית</Link>
-            <Link to="/privacy" className="hover:text-foreground">מדיניות פרטיות</Link>
-            <Link to="/terms" className="hover:text-foreground">תנאי שימוש</Link>
-          </nav>
-        </div>
-      </footer>
+      <SiteFooter />
 
       <AuthDialog open={authOpen} mode={mode} onOpenChange={setAuthOpen} onModeChange={setMode} />
     </div>

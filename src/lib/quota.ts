@@ -2,7 +2,7 @@
 export const FREE_MONTHLY_LIMIT = 3;
 
 /** Flip to true once monthly usage tracking exists on the server. */
-export const QUOTA_ENFORCED = false;
+export const QUOTA_ENFORCED = true;
 
 export type Tier = "free" | "pro" | string;
 
