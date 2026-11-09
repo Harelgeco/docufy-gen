@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { FileUploader } from "@/components/FileUploader";
+import { PrivacyBadge } from "@/components/PrivacyBadge";
 import { NameSelector } from "@/components/NameSelector";
 import { DocumentPreview } from "@/components/DocumentPreview";
 import { ExportOptions } from "@/components/ExportOptions";
