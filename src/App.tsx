@@ -8,6 +8,7 @@ import Landing from "./pages/Landing";
 import ManualEntry from "./pages/ManualEntry";
 import NotFound from "./pages/NotFound";
 import LegalPage from "./pages/LegalPage";
+import { SiteFooter } from "@/components/SiteFooter";
 import { lazy, Suspense } from "react";
 const Admin = lazy(() => import("./pages/Admin"));
 
@@ -29,6 +30,7 @@ const App = () => (
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <SiteFooter hideOn={["/"]} />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

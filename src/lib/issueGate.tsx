@@ -16,9 +16,9 @@ export function useIssueGate() {
 
   const tryRun = async (count: number, run: () => void) => {
     if (QUOTA_ENFORCED) {
-      const { data } = await supabase.from("profiles").select("tier, documents_issued").maybeSingle();
-      // TODO: replace documents_issued with a per-month counter when quotas go live.
-      const a = checkIssueAllowance(data?.tier ?? "free", data?.documents_issued ?? 0, count);
+      const { data } = await supabase.rpc("get_issue_usage");
+      const row = Array.isArray(data) ? data[0] : data;
+      const a = checkIssueAllowance(row?.tier ?? "free", row?.used ?? 0, count);
       if (!a.allowed) {
         toast.error(
           `בחינם אפשר להנפיק ${FREE_MONTHLY_LIMIT} מסמכים בחודש (נשארו ${a.remaining}). לכמות גדולה יותר נדרשת הגרסה בתשלום.`,

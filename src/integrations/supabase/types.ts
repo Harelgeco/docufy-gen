@@ -20,21 +20,27 @@ export type Database = {
           documents_issued: number
           email: string | null
           id: string
+          month_issued: number
           tier: Database["public"]["Enums"]["subscription_tier"]
+          usage_month: string
         }
         Insert: {
           created_at?: string
           documents_issued?: number
           email?: string | null
           id: string
+          month_issued?: number
           tier?: Database["public"]["Enums"]["subscription_tier"]
+          usage_month?: string
         }
         Update: {
           created_at?: string
           documents_issued?: number
           email?: string | null
           id?: string
+          month_issued?: number
           tier?: Database["public"]["Enums"]["subscription_tier"]
+          usage_month?: string
         }
         Relationships: []
       }
@@ -75,6 +81,13 @@ export type Database = {
           is_admin: boolean
           last_sign_in_at: string
           tier: Database["public"]["Enums"]["subscription_tier"]
+        }[]
+      }
+      get_issue_usage: {
+        Args: never
+        Returns: {
+          tier: string
+          used: number
         }[]
       }
       has_role: {
