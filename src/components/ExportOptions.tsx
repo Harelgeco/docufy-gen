@@ -9,6 +9,7 @@ import PizZip from "pizzip";
 import { saveAs } from "file-saver";
 import { PDFGenerator } from "@/lib/pdfGenerator";
 import { translations, Language } from "@/lib/translations";
+import type { IssueDraft } from "@/lib/issueRecovery";
 
 interface ExportOptionsProps {
   disabled?: boolean;
@@ -18,6 +19,7 @@ interface ExportOptionsProps {
   selectedNames?: string[];
   nameColumn?: string;
   language: "he" | "en";
+  recoveryDraft?: IssueDraft;
 }
 
 const normalizeKey = (s: string) =>
@@ -59,9 +61,9 @@ export const ExportOptions = ({
   selectedNames,
   nameColumn,
   language,
+  recoveryDraft,
 }: ExportOptionsProps) => {
   const t = translations[language];
-  const { gate, dialog } = useIssueGate();
   const generateDocuments = async () => {
     if (!wordFile || !excelData || !selectedNames || !nameColumn) {
       toast.error("Missing required data");
@@ -185,6 +187,8 @@ export const ExportOptions = ({
     }
   };
 
+  const { gate, dialog } = useIssueGate(recoveryDraft, { pdf: generatePDFs, word: generateDocuments });
+
   return (
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-4 text-foreground">{t.exportOptions}</h3>
@@ -193,7 +197,7 @@ export const ExportOptions = ({
       <Button
         className="w-full h-14 text-base font-bold gap-3 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.99] transition-all"
         disabled={disabled}
-        onClick={() => gate(selectedCount, generatePDFs)}
+        onClick={() => gate(selectedCount, "pdf")}
       >
         <Download className="h-5 w-5 shrink-0" />
         {t.issuePdf}
@@ -204,7 +208,7 @@ export const ExportOptions = ({
         className="w-full h-11 mt-3 text-sm gap-2"
         variant="outline"
         disabled={disabled}
-        onClick={() => gate(selectedCount, generateDocuments)}
+        onClick={() => gate(selectedCount, "word")}
       >
         <FileText className="h-4 w-4 shrink-0" />
         {t.issueWord}

@@ -5,3 +5,4 @@
 - The active Word template (with fields already marked) is mirrored to sessionStorage so a refresh or tab return restores the same document instead of forcing the user to re-mark fields.
 - Excel workbook generation and header detection share a tested helper; distinguish header-first tables from legacy title-prefixed files so re-upload preserves all records.
 - Guests can use the whole app; every PDF/Word download goes through `useIssueGate` (sign-up gate + quota check via `checkIssueAllowance`), so issuing limits live in one place.
+- Before guest authentication, persist the complete export draft and format in local IndexedDB with a 24-hour expiry and opaque return-URL ID; restore both workspaces before mounting exports and atomically claim the intent after session hydration to survive redirects/new tabs without duplicate downloads.

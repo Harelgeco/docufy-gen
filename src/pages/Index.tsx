@@ -21,24 +21,27 @@ import { TourHint } from "@/components/TourHint";
 import { createSampleDocx } from "@/lib/sampleDocx";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "react-router-dom";
+import { useIssueDraft } from "@/lib/useIssueDraft";
+import type { IssueDraft } from "@/lib/issueRecovery";
 
-const Index = () => {
-  const [excelFile, setExcelFile] = useState<File>();
+const ExcelWorkspace = ({ draft }: { draft?: IssueDraft }) => {
+  const [excelFile, setExcelFile] = useState<File | undefined>(draft?.excelFile);
   const [wordFile, setWordFile] = useSharedWordFile();
   const [validatedExcelFile, setValidatedExcelFile] = useState<File>();
   const [validatedWordFile, setValidatedWordFile] = useState<File>();
   const nextStepRef = useRef<HTMLDivElement>(null);
   const [builderOpen, setBuilderOpen] = useState(false);
   const lastScrolledFiles = useRef<[File, File]>();
-  const [selectedNames, setSelectedNames] = useState<string[]>([]);
+  const [selectedNames, setSelectedNames] = useState<string[]>(draft?.selectedNames ?? []);
   const [names, setNames] = useState<string[]>([]);
-  const [excelHeaders, setExcelHeaders] = useState<string[]>([]);
-  const [excelData, setExcelData] = useState<any[]>([]);
+  const [excelHeaders, setExcelHeaders] = useState<string[]>(Object.keys(draft?.excelData?.[0] ?? {}));
+  const [excelData, setExcelData] = useState<any[]>(draft?.excelData ?? []);
   const [wordPlaceholders, setWordPlaceholders] = useState<string[]>([]);
-  const [selectedNameColumn, setSelectedNameColumn] = useState<string>("שם מלא רוכש 1");
+  const [selectedNameColumn, setSelectedNameColumn] = useState<string>(draft?.nameColumn ?? "שם מלא רוכש 1");
+  const restoredNames = useRef(Boolean(draft));
   const [language, setLanguage] = useState<Language>(() => {
     const saved = localStorage.getItem("preferred-language");
-    return (saved === "he" || saved === "en") ? saved : "he";
+    return draft?.language ?? ((saved === "he" || saved === "en") ? saved : "he");
   });
   const t = translations[language];
   const [params] = useSearchParams();
@@ -53,7 +56,7 @@ const Index = () => {
   }, [language]);
 
   useEffect(() => {
-    if (excelFile) {
+    if (excelFile && excelFile !== draft?.excelFile) {
       parseExcelFile(excelFile);
     }
   }, [excelFile]);
@@ -217,7 +220,8 @@ const Index = () => {
     console.log("Extracted names:", extractedNames.slice(0, 5));
     
     setNames(extractedNames);
-    setSelectedNames([]);
+    if (restoredNames.current) restoredNames.current = false;
+    else setSelectedNames([]);
     
     toast.success(`נטענו ${extractedNames.length} ערכים מעמודה "${columnName}"`);
   };
@@ -378,6 +382,7 @@ const Index = () => {
                   selectedNames={selectedNames}
                   nameColumn={selectedNameColumn}
                   language={language}
+                  recoveryDraft={wordFile && excelFile ? { kind: "excel", wordFile, excelFile, excelData, selectedNames, nameColumn: selectedNameColumn, language } : undefined}
                 />
               </div>
             </div>
@@ -396,6 +401,11 @@ const Index = () => {
       </main>
     </div>
   );
+};
+
+const Index = () => {
+  const { ready, draft } = useIssueDraft("excel");
+  return ready ? <ExcelWorkspace draft={draft} /> : <p role="status" className="p-8 text-center text-muted-foreground">משחזרים את העבודה…</p>;
 };
 
 export default Index;

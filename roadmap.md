@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Preserve guest preparation and download intent across signup redirects and new-tab email verification.
+- [ ] Test local recovery, cancellation, expiration, and authenticated download resumption.
+
 - [x] Language button: looks like a real button; click opens a popup with Hebrew/English options (no auto-switch on click).
 - [x] Generate header-only personalized Excel, explain before download, and show download only with fields.
 - [x] Add the personalized Excel tip and equalize upload boxes.

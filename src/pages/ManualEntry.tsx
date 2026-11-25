@@ -13,18 +13,20 @@ import { useSharedWordFile } from "@/lib/wordFileStore";
 import { TemplateBuilder } from "@/components/TemplateBuilder";
 import { ReadyDocumentButton } from "@/components/ReadyDocumentButton";
 import { PrivacyBadge } from "@/components/PrivacyBadge";
+import { useIssueDraft } from "@/lib/useIssueDraft";
+import type { IssueDraft } from "@/lib/issueRecovery";
 
-const ManualEntry = () => {
+const ManualWorkspace = ({ draft }: { draft?: IssueDraft }) => {
   const [wordFile, setWordFile] = useSharedWordFile();
   const [placeholders, setPlaceholders] = useState<string[]>([]);
-  const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
-  const [images, setImages] = useState<UploadedImage[]>([]);
+  const [fieldValues, setFieldValues] = useState<Record<string, string>>(draft?.fieldValues ?? {});
+  const [images, setImages] = useState<UploadedImage[]>(() => (draft?.images ?? []).map((image) => ({ ...image, preview: URL.createObjectURL(image.file) })));
   const [hasImagePlaceholder, setHasImagePlaceholder] = useState(false);
   const [builderOpen, setBuilderOpen] = useState(false);
 
   const [language, setLanguage] = useState<Language>(() => {
     const saved = localStorage.getItem("preferred-language");
-    return (saved === "he" || saved === "en") ? saved : "he";
+    return draft?.language ?? ((saved === "he" || saved === "en") ? saved : "he");
   });
   const t = translations[language];
 
@@ -81,7 +83,7 @@ const ManualEntry = () => {
         uniquePlaceholders.forEach((p) => {
           initialValues[p] = "";
         });
-        setFieldValues(initialValues);
+        setFieldValues(wordFile === draft?.wordFile ? { ...initialValues, ...draft.fieldValues } : initialValues);
         
         toast.success(
           language === "he"
@@ -204,6 +206,11 @@ const ManualEntry = () => {
       </main>
     </div>
   );
+};
+
+const ManualEntry = () => {
+  const { ready, draft } = useIssueDraft("manual");
+  return ready ? <ManualWorkspace draft={draft} /> : <p role="status" className="p-8 text-center text-muted-foreground">משחזרים את העבודה…</p>;
 };
 
 export default ManualEntry;

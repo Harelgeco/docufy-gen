@@ -22,13 +22,17 @@ interface Props {
   onModeChange: (mode: AuthMode) => void;
   title?: string;
   description?: string;
+  returnTo?: string;
+  onAuthComplete?: () => void;
 }
 
-export const AuthDialog = ({ open, mode, onOpenChange, onModeChange, title, description }: Props) => {
+export const AuthDialog = ({ open, mode, onOpenChange, onModeChange, title, description, returnTo, onAuthComplete }: Props) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [loading, setLoading] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
+  const complete = () => onAuthComplete ? onAuthComplete() : onOpenChange(false);
   const isSignup = mode === "signup";
 
   const submit = async (e: React.FormEvent) => {
@@ -42,35 +46,39 @@ export const AuthDialog = ({ open, mode, onOpenChange, onModeChange, title, desc
     setErrors({});
     setLoading(true);
     if (isSignup) {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: parsed.data.email,
         password: parsed.data.password,
-        options: { emailRedirectTo: window.location.origin + window.location.pathname },
+        options: { emailRedirectTo: returnTo ?? window.location.origin + window.location.pathname },
       });
       if (error) toast.error(error.message);
       else {
-        toast.success("נשלח אליך מייל לאימות החשבון");
-        onOpenChange(false);
+        if (data.session) complete();
+        else {
+          toast.success("נשלח אליך מייל לאימות החשבון");
+          setVerificationSent(true);
+          onModeChange("login");
+        }
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email: parsed.data.email, password: parsed.data.password });
       if (error) toast.error("אימייל או סיסמה שגויים");
       else {
         toast.success("התחברת בהצלחה");
-        onOpenChange(false);
+        complete();
       }
     }
     setLoading(false);
   };
 
   const google = async () => {
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + window.location.pathname });
+    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: returnTo ?? window.location.origin + window.location.pathname });
     if (result.error) {
       toast.error("ההתחברות עם Google נכשלה");
       return;
     }
     if (result.redirected) return;
-    onOpenChange(false);
+    complete();
   };
 
   return (
@@ -82,6 +90,8 @@ export const AuthDialog = ({ open, mode, onOpenChange, onModeChange, title, desc
             {description ?? (isSignup ? "התחל ליצור מסמכים מותאמים בדקות" : "ברוך שובך! התחבר כדי להמשיך")}
           </DialogDescription>
         </DialogHeader>
+
+        {verificationSent && <p role="status" className="text-sm text-muted-foreground">נשלח מייל לאימות החשבון. פתחו את הקישור באותו דפדפן כדי להמשיך בהורדה, או אשרו את האימייל והתחברו כאן.</p>}
 
         <Button variant="outline" className="w-full h-11 gap-2" onClick={google} type="button">
           <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden>
