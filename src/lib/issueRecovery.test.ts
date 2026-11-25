@@ -22,7 +22,7 @@ test("redirect/new-tab recovery preserves all records, selected names and files"
 });
 
 test("manual recovery preserves field values and image bytes", async () => {
-  const manual: IssueDraft = { kind: "manual", wordFile: draft.wordFile, language: "en", fieldValues: { Name: "Harel" }, images: [{ id: "photo", file: new File(["image bytes"], "photo.png"), preview: "blob:expired" }] };
+  const manual: IssueDraft = { kind: "manual", wordFile: draft.wordFile, language: "en", fieldValues: { Name: "Harel" }, images: [{ id: "photo", file: new File(["image bytes"], "photo.png"), preview: "blob:expired", caption: "Profile" }] };
   const id = await saveIssueDraft(manual, "pdf");
   const restored = await readIssueDraft(id);
   deepStrictEqual(restored?.fieldValues, { Name: "Harel" });
